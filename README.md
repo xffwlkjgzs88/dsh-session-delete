@@ -13,9 +13,7 @@
   <a href="https://github.com/xffwlkjgzs88/dsh-session-delete/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/xffwlkjgzs88/dsh-session-delete?style=flat-square&label=Stars&color=2f81f7&logo=github&logoColor=white"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-3fb950?style=flat-square"></a>
   <a href="DISCLAIMER.md"><img alt="Disclaimer" src="https://img.shields.io/badge/免责声明-必读-d29922?style=flat-square"></a>
-  <a href="#兼容性"><img alt="测试于" src="https://img.shields.io/badge/实测-DSH%200.2.0--rc.2-8b5cf6?style=flat-square"></a>
-  <a href="#兼容性"><img alt="Node" src="https://img.shields.io/badge/Node.js-%3E%3D18-339933?style=flat-square&logo=nodedotjs&logoColor=white"></a>
-  <a href="https://wpa.qq.com/msgrd?v=3&amp;uin=811588817&amp;site=qq&amp;menu=yes"><img alt="接单中" src="https://img.shields.io/badge/接单中-QQ%20811588817-12B7F5?style=flat-square&logo=tencentqq&logoColor=white"></a>
+  <a href="https://wpa.qq.com/msgrd?v=3&amp;uin=811588817&amp;site=qq&amp;menu=yes"><img alt="QQ" src="https://img.shields.io/badge/QQ-811588817-12B7F5?style=flat-square&logo=tencentqq&logoColor=white"></a>
 </p>
 
 <p>
@@ -24,62 +22,32 @@
 
 <p>
   <sub>
-    <b>作者接活</b>：网站 / 小程序搭建与部署 · 服务器 · 域名 · 支付接口对接，一条龙<br/>
-    <a href="https://wpa.qq.com/msgrd?v=3&amp;uin=811588817&amp;site=qq&amp;menu=yes">QQ 811588817</a>（加时注明来意）
+    作者接活：网站 / 小程序搭建部署 · 服务器 · 域名 · 支付接口对接
   </sub>
 </p>
 
 </div>
 
----
-
-<img src="assets/preview.png" width="100%" alt="删除弹窗" />
-
 > [!IMPORTANT]
-> **装之前先看清楚：这个插件会改动你界面的两处地方。**
+> 装之前知道两件事：
 >
-> 1. **会话行多一个垃圾桶** —— 这是主功能，两次点击删除。
-> 2. **侧栏左下角的「新版本」按钮会被隐藏**，改为「设置 → 通用」里的一行「版本更新」。
+> 1. 会话行会多一个垃圾桶，点两次删除（这是主功能）；
+> 2. 侧栏左下角的"新版本"按钮会被藏起来，改到「设置 → 通用」里。不想要：Console 执行
+>    `localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')` 刷新即可。
 >
-> 第 2 条不属于删除功能，是顺手做的界面调整。**不想要**：在 DSH 开发者工具 Console 里执行
-> `localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')`，刷新页面，原生按钮立刻回来。
-> 只在桌面版、且宿主确实提供了更新桥时才会动它；web 版不会碰。
-> 细节见下面「[它一共改了两处界面](#它一共改了两处界面)」。
+> 只有桌面版、且宿主有 `dshDesktop.updates` 才会动；web 版不碰。
 
-## 起因
+## 装
 
-DSH 侧栏只有归档，没有删除。
-
-我这人有点强迫症，看着那串越来越长的归档列表就膈应 —— 那些会话我根本不会再打开，可它们还在硬盘上占着地方。归档不是删除，它只是把东西塞进抽屉，抽屉还是会满。
-
-一开始的做法很粗暴：直接去 `~/.dsh/sessions/` 把会话目录删了。
-
-删完看着确实没了。过几分钟又冒出来，重启之后更是原样回来。
-
-翻了一晚上才搞明白：宿主的 `WorkspaceRegistry` 把整份侧栏状态握在内存里，你动磁盘它根本不知道。只要它再写一次盘，整份内存状态就覆盖回去，被删掉的 `sessionId` 自然跟着回来。备份里留过一份现场：
+**方法一（推荐）**：在 DSH 里新开一个会话，把下面这句原样发给它。
 
 ```text
-12:48:57  workspace.json: (空)                      插件删成功
-12:49:14  workspace.json: 宿主写回，updatedAt 变了   宿主刷盘
-12:49:20  workspace.json: d2f98c9f, 3caf4ef1        删掉的 id 又在了
+把 GitHub 上的 xffwlkjgzs88/dsh-session-delete 装到 DSH：profile 的 package.json 加依赖、bundles 加一行，跑 npm install，重启后打开 /session-delete/ping 确认。
 ```
 
-所以这个插件的顺序是反的：先让宿主把那几条会话忘掉，再动文件，最后盯几秒看它会不会被写回来。
+它自己会找目录、改文件、跑安装。装完重启 DSH 就行，不用更新客户端。
 
-## 删一条会话时，里面发生了什么
-
-1. 会话在跑就先停活（`archiveSession({ stopActivity: true })`），等 300ms 让最后一段写盘落完；
-2. 从 `SessionStore` detach，触发 `session/disposed`；
-3. 每个 workspace 实体 `detachSession(id)`，顺手把 archived / pinned 里残留的 id 剔掉；
-4. 删 `sessions/<bucket>/<id>/` 和 `storages/session_projcache/sessions/<id>.json`；
-5. `emit('api-session/removed')`，浏览器列表立刻掉行，不用整页刷新；
-6. 1.2 秒和 4 秒各复核一次，发现被写回就地再清一遍。
-
-拿不到 `workspaceRegistry` 服务的时候，才退回直接改 `workspace.json`，动手前存一份 `workspace.json.bak-<时间戳>`。服务在就绝不双写 —— 两个写者抢同一份 JSON，只会更难查。
-
-## 安装
-
-桌面版改 `~/.dsh/profiles/desktop/package.json`，web 版改 `~/.dsh/profiles/web/package.json`。加两处：
+**方法二**：自己改两处。桌面版是 `~/.dsh/profiles/desktop/package.json`，web 版是 `~/.dsh/profiles/web/package.json`。
 
 ```jsonc
 {
@@ -88,207 +56,164 @@ DSH 侧栏只有归档，没有删除。
 }
 ```
 
-同目录 `npm install`，重启 DSH。
+同目录 `npm install`，重启。没装 Node 也行，零依赖：把仓库解压成 `node_modules/dsh-session-delete` 丢进去。
 
-没装 Node 也行 —— 零依赖，把仓库解压成 `node_modules/dsh-session-delete` 丢进去，`bundles` 加一行就完事。
-
-验证：
+**验证**：
 
 ```text
 http://127.0.0.1:19387/session-delete/ping
-{"ok":true,"home":"…","version":"0.3.4"}
+{"ok":true,"home":"…","version":"0.3.5"}
 ```
 
-懒得自己动，在 DSH 里发这一句：
+## 起因
 
-> 把 GitHub 上的 xffwlkjgzs88/dsh-session-delete 装到 DSH：profile 的 package.json 加依赖、bundles 加一行，跑 npm install，重启后打开 /session-delete/ping 确认。
+DSH 侧栏只有归档，没有删除。我那串归档列表越堆越长，全是不会再打开的东西，还占着硬盘。
 
-## 用起来
+最初我直接去 `~/.dsh/sessions/` 删目录。删完看着没了，过几分钟又冒出来，重启更是原样回来。
 
-鼠标移到会话行上，`···` 右边会出现一个垃圾桶。
+查了一晚上才明白：宿主的 `WorkspaceRegistry` 把整份侧栏状态放在内存里，你动磁盘它不知道。它下一次写盘，整份内存状态覆盖回去，被删的 `sessionId` 又回来了。备份里留着证据：
 
-第一次点，按钮变红问「确认?」，3.5 秒内有效，过期自动复原。第二次点才真删，删完页面自己刷新。
+```text
+12:48:57  workspace.json: (空)                      插件删成功
+12:49:14  workspace.json: 宿主写回，updatedAt 变了   宿主刷盘
+12:49:20  workspace.json: d2f98c9f, 3caf4ef1        删掉的 id 又在了
+```
 
-弹窗里会告诉你这条会话占多少磁盘，删之前心里有个数。
+所以顺序得反过来：先让宿主忘掉，再删文件，最后盯几秒看会不会被写回。
 
-如果这条会话还在跑 —— 包括你正看着的这条 —— 会先弹框说这一轮会被打断，确认了才动手。删当前会话时后端**先回包再执行**，不然响应发不出去，浏览器会一直转圈等超时。
+## 删一条会话时会发生什么
 
-## 它一共改了两处界面
+1. 会话在跑就先停活，等 300ms 让最后一段写盘落完；
+2. 从 `SessionStore` detach，触发 `session/disposed`；
+3. 每个 workspace 实体 `detachSession(id)`，顺手剔掉 archived / pinned 里的残留；
+4. 删 `sessions/<bucket>/<id>/` 和投影缓存；
+5. `emit('api-session/removed')`，列表立刻掉行；
+6. 1.2 秒、4 秒各复核一次，被写回就再清一遍。
 
-第一次装的人容易只看到删除按钮，其实还有一处 —— 这处必须说明白，不然算背着人动东西。
+拿不到 `workspaceRegistry` 才退回改 `workspace.json`（先存 `.bak`）。服务在就绝不双写。
 
-**第一处：会话行的垃圾桶。** 就是上面说的那个，点两次删掉。
+## 用法
 
-**第二处：把侧栏左下角的「新版本」提示搬进了设置。**
+鼠标移到会话行上，`···` 右边出现垃圾桶。点第一次变红问「确认?」，3.5 秒内点第二次才真删。
 
-- 原来那个小按钮（侧栏左下角、带小红点、类名以 `_indicator` 结尾的那个）会被隐藏；
-- 取而代之，在「设置 → 通用 → 当前版本」下面多一行「版本更新」，文案和状态跟原生完全一致：检查中、下载中 x%、校验中、准备重启、安装并重启；
-- **更新逻辑一点没改**，还是调 `globalThis.dshDesktop.updates` 那套原生桥，只是换了入口位置；
-- **只在桌面版、且宿主确实提供了 `dshDesktop.updates` 时才生效**。web 版没有这个桥，插件不会隐藏任何按钮 —— 藏掉又没有替代入口，等于给你添乱。
+弹窗里会显示这条会话占多大。正在运行的会话会额外警告"这一轮会被打断"，确认后才动手。
 
-不想要这个改动？两种关法：
+## 界面改动（第二处）
+
+除了删除按钮，插件还动了一个地方：
+
+- 隐藏侧栏左下角那个「新版本」按钮（类名以 `_indicator` 结尾）；
+- 在「设置 → 通用 → 当前版本」下面补一行「版本更新」，状态和原生一致；
+- 更新逻辑没改，还是走 `globalThis.dshDesktop.updates`；
+- 只在桌面版且该桥存在时生效，web 版不碰。
+
+关掉：
 
 ```js
-// 在 DSH 的开发者工具 Console 里执行一次，刷新页面即可，原生按钮会回来
 localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')
 ```
 
-或者改代码：删掉 `lib/client.js` 里 `apply()` 末尾那行 `installUpdateIndicatorHider()`。删完设置里那行还在，不影响使用。
-
 ## 接口
 
-四条路由挂在 `/session-delete` 下，同源、无鉴权。
+四条路由，同源、无鉴权。
 
 ```http
-GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.4"}
-GET  /session-delete/state             → 宿主认为有什么 vs 磁盘上实际有什么
+GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.5"}
+GET  /session-delete/state             → 宿主认为有什么 vs 磁盘上有什么
 GET  /session-delete/size?sessionId=…  → 这条会话占多少字节
 POST /session-delete/delete            → {"sessionId":"…"} 或 {"sessionId":"…","force":true}
 ```
 
-`/delete` 的几种返回：
+`/delete` 返回：`200` 删完（带 `steps`）、`409` 会话在跑要 `force`、`202` 已受理后台执行、`400` id 不合法、`405` 方法不对。
 
-| 情况 | 返回 |
-|---|---|
-| 正常删完 | `200` + `steps` 逐步结果 |
-| 会话在跑，没带 force | `409 {"code":"running","current":true}` |
-| 会话在跑，带了 force | `202`，60ms 后后台执行 |
-| sessionId 不合法 | `400` |
-| 方法不对 | `405` |
-
-`steps` 里哪一步没成功会写成 `fail: 原因`，不会假装成功。参数细节见 [docs/api.md](docs/api.md)，内部时序见 [docs/internals.md](docs/internals.md)。
+`steps` 里失败会写成 `fail: 原因`，不假装成功。细节见 [docs/api.md](docs/api.md)。
 
 ## 兼容性
 
-先把话说明白：**下面是"验证到什么程度"，不是"支持什么版本"**。
+**只在 DSH 0.2.0-rc.2 桌面版（Windows 11）上真跑过。** 当前仓库版本只做了静态验证（`node --check` + 4 条单测）。
 
-| 项目 | 值 | 验证程度 |
-|---|---|---|
-| DSH | 0.2.0-rc.2 桌面版（EXE FileVersion 0.2.0-rc.2） | **实际运行验证** |
-| 插件 | 0.2.0 | 在本机 DSH 里跑着，`/session-delete/ping` 返回 `"version":"0.2.0"` |
-| 插件 | 0.3.4（本仓库当前版本） | **只做了静态验证**：`node --check` + 4 条单测通过；界面与删除流程没有在本机重跑（升级需重启 DSH，会打断当前会话） |
-| 系统 | Windows 11 | 实机 |
-| Node | 24.x | 只影响 `npm install`，运行用 DSH 自带运行时 |
+没实测：web 版、0.1.x、macOS / Linux、以后的新版本。
 
-自己验证的最快方式：装完看 `/session-delete/ping` 返回的 `version`，那就是你实际跑着的版本。
+换宿主版本时先看诊断，`/session-delete/state` 现在会直接列出拿到了哪些服务：
 
-没验证过的：web 版具体构建号、0.1.x 老版本、macOS / Linux、以及以后的新版本。
-
-| 你的版本 | 判断 |
-|---|---|
-| DSH 0.2.0-rc.2（桌面） | 直接可用，就是开发环境 |
-| DSH 0.2.x 其它构建（web / 桌面） | 大概率可用，前提是宿主还提供 `workspaceRegistry`、`sessions`、`webServer` 和那两个座位名 |
-| DSH 0.1.x | 别装。服务名和座位体系都不一样，装了按钮也不会出现 |
-| DSH 0.3.x 及以后 | 未知。宿主改了服务名或座位名就会静默失效 |
-
-失效时不会崩，只是降级。四种缺东西的情况：
-
-| 缺什么 | 实际表现 |
-|---|---|
-| `workspaceRegistry` 拿不到 | 退回直接改 `workspace.json`（先备份），功能照常 |
-| `sessions` 拿不到 | 跳过 detach，其余步骤照做 |
-| `webServer` 没有（headless / TUI） | 宿主半边整块不加载，静默 |
-| 座位名改了 | 按钮不出现，不报错 |
-
-装完想确认自己这版能跑，看两个地址：
-
-```text
-/session-delete/ping    → 有返回 = 宿主半边活着
-/session-delete/state   → registry 是 service 走主路；file-only 在降级；absent 服务没拿到
+```json
+{ "services": { "webServer": true, "registry": true, "sessions": true } }
 ```
 
-## 名词解释
+哪个是 `false`，就说明新版改了那个名字 —— 改 `lib/index.js` 里对应的 `ctx.get('…')` 即可，不用猜。
 
-| 词 | 什么意思 |
+缺东西时的表现，都不会崩：
+
+| 缺什么 | 表现 |
 |---|---|
-| bundle | 插件的登记项，写进 `dsh.profile.bundles`，DSH 启动时按这个列表加载 |
-| slot / 座位 | 宿主在界面上预留的位置，删除按钮就是塞进会话行的操作位 |
-| registry | 宿主的会话登记表：哪条会话属于哪个工作区、哪些归档了、哪些置顶了 |
-| `~/.dsh` | DSH 的数据目录，会话、缓存、配置都在这 |
+| `workspaceRegistry` | 退回改 `workspace.json`（带备份） |
+| `sessions` | 跳过 detach |
+| `webServer`（headless / TUI） | 宿主半边不加载 |
+| 座位名变了 | 按钮不出现，不报错 |
 
 ## 常见问题
 
-**装了没反应，看不到垃圾桶？**
-`/session-delete/ping` 打不开 = 插件没加载（查 `bundles`、确认真的重启过）；打得开但没按钮 = 座位名对不上，把 `/session-delete/state` 的返回发出来。
+**装了没反应？**
+`/session-delete/ping` 打不开 = 没加载，查 `bundles` 和有没有重启；打得开但没按钮 = 座位名对不上，把 `/state` 发出来。
 
-**提示「npm 不是内部或外部命令」？**
-没装 Node。下仓库 ZIP，解压后改名 `dsh-session-delete`，整个丢进 `node_modules\`，`bundles` 加一行，重启。
+**提示 npm 不是内部或外部命令？**
+没装 Node。下 ZIP 解压改名 `dsh-session-delete`，丢进 `node_modules\`，`bundles` 加一行。
 
-**改坏了 `package.json`，DSH 打不开？**
-同目录找 `package.json.bak-*`，改名回 `package.json` 覆盖。
+**改坏了 package.json？**
+同目录找 `package.json.bak-*` 改回去。
 
 **删错了能恢复吗？**
-不能，没有回收站也没有撤销。删前先备份 `~/.dsh/sessions` 和 `storages\workspace.json`。
+不能。删前备份 `~/.dsh/sessions` 和 `storages\workspace.json`。
 
-**能只删会话里的一部分消息吗？**
-不能，只能整条删。
+**能只删一部分消息吗？**
+不能，只能整条。
 
-**会不会误删我正在用的这条？**
-会弹窗让你确认，删完页面重载、落到一条新会话。
+**会不会误删正在用的这条？**
+会弹窗确认。删完页面重载到新会话。
 
-**删完磁盘真的释放了吗？**
-是。正文目录和投影缓存都删了，弹窗里那个「占用 48.2 MB」就是实际删掉的量。
+**删完真的释放磁盘了吗？**
+是，正文和投影缓存都删了。
 
-**会不会把我的内容传出去？**
-不会。代码里没有外发请求，只读写本机 `~/.dsh`，可以自己搜 `lib/index.js` 里的 `fetch`。
+**内容会不会外传？**
+不会。没有外发请求，只读写本机 `~/.dsh`。
 
-**会不会影响 DSH 自己的更新？**
-不会。只是把更新入口从侧栏搬到设置里，走的还是官方更新桥。
+**影响 DSH 更新吗？**
+不影响，只是把入口换了位置。
 
-**「别把端口开到公网」是什么意思？**
-这四条路由没有密码。端口一旦映射到公网，任何人都能调删除接口。默认只听 `127.0.0.1` 就没事。
+**别把端口开到公网是什么意思？**
+四条路由没密码，端口映射出去谁都能调删除。
 
-**升级 DSH 之后插件还在吗？**
-在，升级完重启一次即可。如果新版改了座位名，按钮会消失，那只能等适配。
-
-**Mac / Linux 支持吗？**
-路径逻辑跨平台，但只在 Windows 上跑过，没实测。
+**Mac / Linux 呢？**
+逻辑跨平台，没实测。
 
 ## 卸载
 
-1. `package.json` 的 `bundles` 里删掉 `"dsh-session-delete"`；
-2. `dependencies` 里删掉对应那行；
-3. 删掉 `node_modules\dsh-session-delete` 文件夹；
-4. 重启 DSH。
-
-已经删掉的会话不会因此回来，也别指望。
-
+删 `bundles` 里那行、删 `dependencies` 里那行、删 `node_modules\dsh-session-delete`，重启。
 
 ## 已知问题
 
-- **座位名写死。** 按钮挂 `sidebar.workspaces.session.row.action`，弹窗挂 `shell.overlay`。宿主改名后按钮静默消失，改 `lib/client.js` 顶部两个常量就行。
-- **隐藏更新按钮靠类名后缀判断。** 现在认 `_indicator` 结尾的按钮，宿主换构建哈希也能认；但如果哪天连类名都换了，这个功能会失效（不影响删除）。
-- **并发删同一个 id 没有去重。** 别对同一条疯狂点。
-- **`workspace.json` 退路只删 id，不做结构迁移。** 宿主改 JSON 结构的话，这条退路会先坏。
+- 座位名写死：`sidebar.workspaces.session.row.action`、`shell.overlay`。宿主改名后按钮消失，改 `lib/client.js` 顶部常量。
+- 隐藏更新按钮靠 `_indicator` 类名后缀判断，宿主换类名会失效（不影响删除）。
+- 并发删同一个 id 没去重。
+- `workspace.json` 退路只删 id，不做结构迁移。
 
 ## 用户须知
 
-**这个插件删东西不进回收站。**
+**删了不进回收站。** 没有撤销，我也找不回来。
 
-- 删了就是删了，没有软删除、没有撤销，我也找不回来。
-- `force` 的强制删除会打断那条会话正在跑的回合；删的是当前会话的话，你眼前这一轮就断了。
-- 用之前建议先把 `~/.dsh/sessions` 和 `storages/workspace.json` 拷一份。
-- 它会改界面：加一个删除按钮，并在桌面版隐藏侧栏的「新版本」按钮（可在 Console 关掉，见文首提示）。
-- **别把 DSH 的 web 端口开到公网。** 这四条路由没鉴权，谁都能 POST，等于把删除按钮挂在公网上。
-- 它不联网、不收集数据，只在本机读写 `~/.dsh`。
-- 作者对数据丢失、工作中断、业务损失不承担赔偿责任，也没有响应时限义务。完整条款（含界面改动、数据处理、责任限制、可分割性）在 [DISCLAIMER.md](DISCLAIMER.md)。
+- `force` 会打断那条会话正在跑的回合。
+- 用前备份 `~/.dsh/sessions` 和 `storages/workspace.json`。
+- 四条路由无鉴权，别把 web 端口开到公网。
+- 不联网、不收集数据，只读写本机 `~/.dsh`。
+- 数据丢失、工作中断、业务损失作者不赔，也没有响应时限。完整条款见 [DISCLAIMER.md](DISCLAIMER.md)。
 
-## 关于作者
+## 作者
 
 **小富富** · QQ **811588817**
 
-写这个插件纯粹因为自己用着膈应，顺手做的。更新不一定勤，但有问题会看。
+插件问题先看上面「常见问题」，再把 `/session-delete/state` 贴过来。
 
-另外接活，做了六七年了：
-
-| 做什么 | 具体一点 |
-|---|---|
-| 网站 / 小程序 | 商城、企业站、预约、分销、后台管理，能搭也能改 |
-| 部署一条龙 | 服务器、域名、备案、HTTPS、环境、上线后运维 |
-| 支付对接 | 微信支付、支付宝、聚合通道，能把资质到回调跑通 |
-| 企业内工具 | 内部系统、数据看板、对接现有 ERP / 物流 / 短信 |
-
-加 QQ 直接说需求就行，不用客套。插件本身的问题也欢迎，但先看上面的「常见问题」和「兼容性」。
+接活：网站、小程序搭建部署，服务器、域名、支付接口对接，一条龙。加 QQ 直接说需求。
 
 ## 许可
 

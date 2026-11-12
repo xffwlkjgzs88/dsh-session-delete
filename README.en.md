@@ -79,7 +79,7 @@ Open a new session in DSH and send:
 }
 ```
 
-`npm install` in that profile directory, then restart DSH. Verify with `/session-delete/ping` → `{"ok":true,...,"version":"0.3.4"}`.
+`npm install` in that profile directory, then restart DSH. Verify with `/session-delete/ping` → `{"ok":true,...,"version":"0.3.5"}`.
 
 ## Two UI changes, both disclosed
 
@@ -96,7 +96,7 @@ localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')
 ## API
 
 ```http
-GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.4"}
+GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.5"}
 GET  /session-delete/state             → registry view vs. on-disk view
 GET  /session-delete/size?sessionId=…  → bytes this session occupies
 POST /session-delete/delete            → {"sessionId":"…"} or {"sessionId":"…","force":true}
@@ -119,7 +119,7 @@ What has actually been checked — not a support matrix:
 |---|---|---|
 | DSH | 0.2.0-rc.2 desktop | **ran for real** |
 | Plugin | 0.2.0 | running on this machine, `/ping` reports it |
-| Plugin | 0.3.4 (this repo) | **static only**: `node --check` + 4 unit tests; UI not re-run locally |
+| Plugin | 0.3.5 (this repo) | **static only**: `node --check` + 4 unit tests; UI not re-run locally |
 | OS | Windows 11 | real machine |
 
 Unverified: web build, DSH 0.1.x, macOS / Linux, future versions.

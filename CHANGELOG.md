@@ -2,6 +2,17 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.3.5]
+
+### Changed
+
+- README 重排：**「装」提到最前面**，一句话安装放在第一屏，手动安装作为备选。起因和原理挪到后面。
+- 全文再压一遍，去掉多余的分节与说教，`##` 从 14 个减到 13 个。
+
+### Added
+
+- `/session-delete/state` 新增 `services` 字段（`webServer` / `registry` / `sessions` 是否拿到）和 `version`。换宿主版本时直接看这里哪个是 `false`，就知道该改哪一处名字。
+
 ## [0.3.4]
 
 ### Changed
