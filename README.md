@@ -263,6 +263,8 @@ dsh-session-delete/
 ├── docs/
 │   ├── internals.md      # 删除时序与根因分析
 │   └── api.md            # 接口细节与 curl 示例
+├── test/
+│   └── smoke.test.mjs    # node:test 冒烟测试
 ├── package.json
 ├── LICENSE
 └── README.md
@@ -274,6 +276,7 @@ dsh-session-delete/
 
 ```bash
 npm run lint        # node --check 两个 JS 文件
+npm test            # node:test 冒烟测试（导出了什么、注册了哪三条路由）
 npm run pack:check  # 看看 npm 包会装进哪些文件
 ```
 

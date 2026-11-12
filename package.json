@@ -26,6 +26,7 @@
   },
   "scripts": {
     "lint": "node --check lib/index.js && node --check lib/client.js",
+    "test": "node --test test/smoke.test.mjs",
     "pack:check": "npm pack --dry-run"
   },
   "keywords": [
