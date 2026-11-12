@@ -13,9 +13,8 @@
   <a href="https://github.com/xffwlkjgzs88/dsh-session-delete/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/xffwlkjgzs88/dsh-session-delete?style=flat-square&label=Stars&color=2f81f7&logo=github&logoColor=white"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-3fb950?style=flat-square"></a>
   <a href="DISCLAIMER.md"><img alt="Disclaimer" src="https://img.shields.io/badge/disclaimer-read-d29922?style=flat-square"></a>
-  <a href="#compatibility"><img alt="DSH" src="https://img.shields.io/badge/dsh-0.2.x-8b5cf6?style=flat-square"></a>
-  <a href="#compatibility"><img alt="Node" src="https://img.shields.io/badge/Node.js-%3E%3D18-339933?style=flat-square&logo=nodedotjs&logoColor=white"></a>
-  <a href="https://wpa.qq.com/msgrd?v=3&amp;uin=811588817&amp;site=qq&amp;menu=yes"><img alt="QQ" src="https://img.shields.io/badge/QQ-811588817-12B7F5?style=flat-square&logo=tencentqq&logoColor=white"></a>
+  <a href="#compatibility"><img alt="Tested" src="https://img.shields.io/badge/tested-DSH%200.2.0--rc.2-8b5cf6?style=flat-square"></a>
+  <a href="https://wpa.qq.com/msgrd?v=3&amp;uin=811588817&amp;site=qq&amp;menu=yes"><img alt="Hire" src="https://img.shields.io/badge/hire%20me-QQ%20811588817-12B7F5?style=flat-square&logo=tencentqq&logoColor=white"></a>
 </p>
 
 <p>
@@ -44,77 +43,67 @@ So the order here is inverted: make the host forget first, touch the disk second
 
 ## What happens when you delete one
 
-1. A running session is stopped first (`archiveSession({ stopActivity: true })`), then 300 ms for the last flush to land.
+1. A running session is stopped first, then 300 ms for the last flush to land.
 2. Detach from `SessionStore`, firing `session/disposed`.
 3. `detachSession(id)` on every workspace entity, plus cleaning `archived` / `pinned`.
 4. Remove `sessions/<bucket>/<id>/` and the projection cache JSON.
 5. `emit('api-session/removed')` so the row drops immediately.
 6. Re-check at 1.2 s and 4 s; if the id came back, clean it again.
 
-Without the `workspaceRegistry` service (renamed, or headless), it falls back to rewriting `workspace.json` and keeps a `workspace.json.bak-<timestamp>`. When the service is there, it never double-writes — two writers over one JSON file is how you get unreproducible bugs.
+Without the `workspaceRegistry` service it falls back to rewriting `workspace.json` and keeps a timestamped backup. It never double-writes when the service is present.
 
 ## Install
 
 ### Let an AI do it
 
-Paste this into any assistant (the DSH chat itself, Cursor, Claude, ChatGPT):
+Paste this into the DSH chat, Cursor, Claude or ChatGPT:
 
 ```text
 Install the DSH plugin dsh-session-delete (GitHub: xffwlkjgzs88/dsh-session-delete):
 
-1. Find my profile: ~/.dsh/profiles/web for the web build, ~/.dsh/profiles/desktop for the desktop build.
+1. ~/.dsh/profiles/web = web build, ~/.dsh/profiles/desktop = desktop build.
    If both exist, ask me instead of guessing.
-2. Back up that package.json as package.json.bak-before-session-delete.
+2. Back up that package.json.
 3. Add "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete" to dependencies.
 4. Append "dsh-session-delete" to dsh.profile.bundles.
-5. Run npm install in that directory.
+5. Run npm install. If npm is missing, unzip the repo into node_modules/dsh-session-delete
+   instead — the plugin has zero dependencies, copying works.
 6. Tell me how to restart DSH (quit and relaunch — no OS reboot, no client update).
-7. After restart, have me open http://127.0.0.1:19387/session-delete/ping and expect {"ok":true,...}.
+7. Have me open http://127.0.0.1:19387/session-delete/ping and expect {"ok":true,...}.
 
-Do not upgrade Node or DSH, and do not touch any other field.
+Do not upgrade Node or DSH.
 ```
-
-Only DSH itself needs a restart — no client update, no reinstall.
 
 ### Manual
 
-Node.js 18+, DSH 0.2+. Restart required — bundles load at startup.
-
-Edit the profile you actually use (`~/.dsh/profiles/web/package.json` or `…/desktop/package.json`):
-
 ```jsonc
 {
-  "dependencies": {
-    "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete"
-  },
-  "dsh": {
-    "profile": {
-      "bundles": ["…existing…", "dsh-session-delete"]
-    }
-  }
+  "dependencies": { "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete" },
+  "dsh": { "profile": { "bundles": ["…existing…", "dsh-session-delete"] } }
 }
 ```
 
-Run `npm install` in that directory, then restart DSH.
+`npm install` in that profile directory, then restart DSH. Verify with `/session-delete/ping` → `{"ok":true,...,"version":"0.3.1"}`.
 
-```text
-GET http://127.0.0.1:19387/session-delete/ping
-{"ok":true,"home":"C:\\Users\\you\\.dsh","version":"0.3.0"}
+## Two UI changes, both disclosed
+
+**1. The bin icon on session rows.** Click twice, session is gone.
+
+**2. The "new version" indicator moves.** The plugin hides the native update badge at the bottom-left of the sidebar (the button whose class ends in `_indicator`) and adds an equivalent "App update" row under **Settings → General**, right below the current version. States are identical (checking / downloading n% / verifying / ready) and the update flow is untouched — it still calls `globalThis.dshDesktop.updates`.
+
+Don't want that second change? Run once in the DevTools console and reload:
+
+```js
+localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')
 ```
-
-A prebuilt `.tgz` is attached to the release page; `npm pack` works too, as does dropping the directory into `node_modules/`.
-
-## Usage
-
-Hover a session row and a bin icon shows up after the `···`. The first click turns it into a red “Confirm?” valid for 3.5 s; the second click deletes. Running sessions ask separately, because `force` interrupts the turn in progress. When you delete the session you're looking at, the server replies *before* acting — otherwise the response never gets out.
 
 ## API
 
 ```http
-GET  /session-delete/ping     → {"ok":true,"home":"…","version":"0.3.0"}
-GET  /session-delete/state    → registry view vs. on-disk view
+GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.1"}
+GET  /session-delete/state             → registry view vs. on-disk view
 GET  /session-delete/size?sessionId=…  → bytes this session occupies
-POST /session-delete/delete   → {"sessionId":"…"} or {"sessionId":"…","force":true}
+POST /session-delete/delete            → {"sessionId":"…"} or {"sessionId":"…","force":true}
 ```
 
 | Result | Response |
@@ -124,38 +113,66 @@ POST /session-delete/delete   → {"sessionId":"…"} or {"sessionId":"…","for
 | Running, force | `202`, executed 60 ms later |
 | Bad id / bad method | `400` / `405` |
 
-`steps` records each step; failures read `fail: …` instead of pretending otherwise. `/state` is the debugging entry point — it lines up `sessionIds` from the registry against what is actually on disk. See [docs/api.md](docs/api.md) and [docs/internals.md](docs/internals.md).
+Details: [docs/api.md](docs/api.md), internals: [docs/internals.md](docs/internals.md).
 
 ## Compatibility
 
-Only verified on **DSH 0.2.x / Windows**. I can't call it universal, but I can say this: **it won't break your DSH**.
+Measured, not assumed:
 
-The plugin touches four public surfaces — `workspaceRegistry`, `sessions`, `webServer.register`, `slots.inject`. If one is missing it degrades or simply stays invisible:
+| | |
+|---|---|
+| DSH | **0.2.0-rc.2 desktop** (FileVersion 0.2.0-rc.2) |
+| OS | Windows 11 |
+| Node | 24.x locally (only matters for `npm install`) |
+| Plugin | 0.3.1 |
+
+| Your version | Verdict |
+|---|---|
+| DSH 0.2.0-rc.2 desktop | works, this is the dev environment |
+| DSH 0.2.x other builds | probably works, as long as the four surfaces exist |
+| DSH 0.1.x | don't — service and slot names differ |
+| DSH 0.3.x+ | unknown — renamed slots/services fail silently |
+
+Failure is graceful, never fatal:
 
 | Missing | Behaviour |
 |---|---|
-| `workspaceRegistry` | falls back to rewriting `workspace.json` (with a backup) |
-| `sessions` | skips the detach step |
-| `webServer` (headless / TUI) | host half never loads, silently |
-| slot name changed | button never appears, no error |
+| `workspaceRegistry` | falls back to rewriting `workspace.json` (backed up) |
+| `sessions` | skips detach |
+| `webServer` (headless / TUI) | host half never loads |
+| slot name changed | button never appears |
 
-Check your build with `/session-delete/ping` (alive?) and `/session-delete/state` (`registry: service` = primary path, `file-only` = degraded, `absent` = service not found). Test on a session you don't need first.
+Self-check: `/ping` answers? host half alive. `/state` → `registry: service` = primary path, `file-only` = degraded.
+
+## FAQ
+
+**Web or desktop build?** EXE icon → `desktop` profile; `dsh web` in a terminal → `web` profile.
+
+**Where is `~/.dsh`?** Windows: `C:\Users\<you>\.dsh`. macOS: `/Users/<you>/.dsh`.
+
+**No button after install?** Open `/ping`. 404 → not loaded (check `bundles`, restart). Answers but no button → slot name mismatch.
+
+**Does it phone home?** No. It only reads and writes files under `~/.dsh`; there is no outbound request in `lib/index.js`.
+
+**Can I undo a delete?** No. Back up `~/.dsh/sessions` first.
+
+**Does it break DSH updates?** No — it only relocates the entry point.
 
 ## Known issues
 
-- Slot names are hard-coded (`sidebar.workspaces.session.row.action`, `shell.overlay`). If DSH renames them, the button disappears silently — fix the two constants at the top of `lib/client.js`.
+- Slot names are hard-coded; a rename makes the button disappear silently.
+- Hiding the update badge relies on the `_indicator` class suffix.
 - No de-duplication for concurrent deletes of the same id.
-- The `workspace.json` fallback only removes ids; it does not migrate structure.
 
 ## Read before use
 
-**Deletion is permanent.** No trash, no undo, and no way for the author to recover it. Back up `~/.dsh/sessions` and `storages/workspace.json` first. The HTTP routes are unauthenticated — never expose the DSH web port publicly. The author accepts no liability for data loss or interrupted work; the full terms are in [DISCLAIMER.md](DISCLAIMER.md).
+**Deletion is permanent.** Back up first. The routes are unauthenticated — never expose the DSH web port publicly. Full terms: [DISCLAIMER.md](DISCLAIMER.md).
 
 ## Author
 
 **小富富 (Xiao Fufu)** · QQ **811588817**
 
-Bug reports: include the `/session-delete/state` output. Also available for website / mini-program build and deployment, servers, domains, and payment API integration.
+Available for website / mini-program build and deployment, servers, domains, and payment API integration. Bug reports: include `/session-delete/state` output.
 
 ## License
 
