@@ -35,6 +35,17 @@
 
 <img src="assets/preview.png" width="100%" alt="删除弹窗" />
 
+> [!IMPORTANT]
+> **装之前先看清楚：这个插件会改动你界面的两处地方。**
+>
+> 1. **会话行多一个垃圾桶** —— 这是主功能，两次点击删除。
+> 2. **侧栏左下角的「新版本」按钮会被隐藏**，改为「设置 → 通用」里的一行「版本更新」。
+>
+> 第 2 条不属于删除功能，是顺手做的界面调整。**不想要**：在 DSH 开发者工具 Console 里执行
+> `localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')`，刷新页面，原生按钮立刻回来。
+> 只在桌面版、且宿主确实提供了更新桥时才会动它；web 版不会碰。
+> 细节见下面「[它一共改了两处界面](#它一共改了两处界面)」。
+
 ## 起因
 
 DSH 侧栏只有归档，没有删除。
@@ -70,7 +81,7 @@ DSH 侧栏只有归档，没有删除。
 
 ### 一、让 AI 帮你装（推荐）
 
-整段复制，粘到 DSH 里的对话，或者 Cursor / Claude / 任何能跑命令的 AI 都行：
+**在 DSH 里新开一个会话**，把下面这段原样发给它 —— 就是你现在正在用的这个 AI，它自己会找路径、改配置、跑安装：
 
 ```text
 帮我安装 DSH 插件 dsh-session-delete（GitHub: xffwlkjgzs88/dsh-session-delete），按顺序做：
@@ -115,7 +126,7 @@ DSH 侧栏只有归档，没有删除。
 
 ```text
 http://127.0.0.1:19387/session-delete/ping
-{"ok":true,"home":"C:\\Users\\you\\.dsh","version":"0.3.1"}
+{"ok":true,"home":"C:\\Users\\you\\.dsh","version":"0.3.2"}
 ```
 
 ## 用起来
@@ -136,9 +147,10 @@ http://127.0.0.1:19387/session-delete/ping
 
 **第二处：把侧栏左下角的「新版本」提示搬进了设置。**
 
-- 原来那个小按钮（右下角带小红点、类名以 `_indicator` 结尾的那个）会被隐藏；
+- 原来那个小按钮（侧栏左下角、带小红点、类名以 `_indicator` 结尾的那个）会被隐藏；
 - 取而代之，在「设置 → 通用 → 当前版本」下面多一行「版本更新」，文案和状态跟原生完全一致：检查中、下载中 x%、校验中、准备重启、安装并重启；
-- **更新逻辑一点没改**，还是调 `globalThis.dshDesktop.updates` 那套原生桥，只是换了入口位置。
+- **更新逻辑一点没改**，还是调 `globalThis.dshDesktop.updates` 那套原生桥，只是换了入口位置；
+- **只在桌面版、且宿主确实提供了 `dshDesktop.updates` 时才生效**。web 版没有这个桥，插件不会隐藏任何按钮 —— 藏掉又没有替代入口，等于给你添乱。
 
 不想要这个改动？两种关法：
 
@@ -154,7 +166,7 @@ localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')
 四条路由挂在 `/session-delete` 下，同源、无鉴权。
 
 ```http
-GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.1"}
+GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.2"}
 GET  /session-delete/state             → 宿主认为有什么 vs 磁盘上实际有什么
 GET  /session-delete/size?sessionId=…  → 这条会话占多少字节
 POST /session-delete/delete            → {"sessionId":"…"} 或 {"sessionId":"…","force":true}
@@ -174,16 +186,19 @@ POST /session-delete/delete            → {"sessionId":"…"} 或 {"sessionId":
 
 ## 兼容性
 
-先把话说明白：**只在下面这一套上实测过**，别的版本我不敢打包票。
+先把话说明白：**下面是"验证到什么程度"，不是"支持什么版本"**。
 
-| 项目 | 实测值 |
-|---|---|
-| DSH | **0.2.0-rc.2 桌面版**（`F:\deepseek\DeepSeek Harness.exe`，FileVersion 0.2.0-rc.2） |
-| 系统 | Windows 11 |
-| Node | 本机 24.x（只影响 `npm install`；DSH 自带运行时） |
-| 插件版本 | 0.3.1 |
+| 项目 | 值 | 验证程度 |
+|---|---|---|
+| DSH | 0.2.0-rc.2 桌面版（EXE FileVersion 0.2.0-rc.2） | **实际运行验证** |
+| 插件 | 0.2.0 | 在本机 DSH 里跑着，`/session-delete/ping` 返回 `"version":"0.2.0"` |
+| 插件 | 0.3.2（本仓库当前版本） | **只做了静态验证**：`node --check` + 4 条单测通过；界面与删除流程没有在本机重跑（升级需重启 DSH，会打断当前会话） |
+| 系统 | Windows 11 | 实机 |
+| Node | 24.x | 只影响 `npm install`，运行用 DSH 自带运行时 |
 
-没实测过的：web 版的具体构建号、0.1.x 老版本、macOS / Linux、以及以后的新版本。
+自己验证的最快方式：装完看 `/session-delete/ping` 返回的 `version`，那就是你实际跑着的版本。
+
+没验证过的：web 版具体构建号、0.1.x 老版本、macOS / Linux、以及以后的新版本。
 
 | 你的版本 | 判断 |
 |---|---|
@@ -251,8 +266,10 @@ Windows 是 `C:\Users\你的用户名\.dsh`，地址栏直接粘 `%USERPROFILE%\
 - 删了就是删了，没有软删除、没有撤销，我也找不回来。
 - `force` 的强制删除会打断那条会话正在跑的回合；删的是当前会话的话，你眼前这一轮就断了。
 - 用之前建议先把 `~/.dsh/sessions` 和 `storages/workspace.json` 拷一份。
+- 它会改界面：加一个删除按钮，并在桌面版隐藏侧栏的「新版本」按钮（可在 Console 关掉，见文首提示）。
 - **别把 DSH 的 web 端口开到公网。** 这四条路由没鉴权，谁都能 POST，等于把删除按钮挂在公网上。
-- 用这个插件造成的数据丢失、工作中断、业务损失，作者不承担责任。完整条款在 [DISCLAIMER.md](DISCLAIMER.md)。
+- 它不联网、不收集数据，只在本机读写 `~/.dsh`。
+- 作者对数据丢失、工作中断、业务损失不承担赔偿责任，也没有响应时限义务。完整条款（含界面改动、数据处理、责任限制、可分割性）在 [DISCLAIMER.md](DISCLAIMER.md)。
 
 ## 关于作者
 

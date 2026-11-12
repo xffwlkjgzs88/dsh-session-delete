@@ -1,6 +1,6 @@
 {
   "name": "dsh-session-delete",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "给 DSH 会话行加一个真删除按钮：先让宿主 registry 遗忘（内存 + 磁盘），再删正文/投影缓存，最后广播移除事件。",
   "type": "module",
   "main": "lib/index.js",

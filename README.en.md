@@ -27,6 +27,14 @@
 
 <img src="assets/preview.png" width="100%" alt="Delete dialog" />
 
+> [!IMPORTANT]
+> **Two UI changes before you install:**
+>
+> 1. A bin icon on session rows (the actual feature).
+> 2. The sidebar's "new version" indicator is hidden and replaced by an "App update" row under Settings → General.
+>
+> To opt out of #2, run `localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')` in DevTools and reload. Only applies to the desktop build with a real updater bridge; the web build is untouched.
+
 ## Why this exists
 
 DSH only archives sessions; there is no delete. The obvious workaround is removing the session directory under `~/.dsh/sessions/`. It looks fine for a minute, then the session reappears — and after a restart it is back for good.
@@ -56,7 +64,7 @@ Without the `workspaceRegistry` service it falls back to rewriting `workspace.js
 
 ### Let an AI do it
 
-Paste this into the DSH chat, Cursor, Claude or ChatGPT:
+Open a new session **inside DSH** and paste this to the built-in assistant — it can find the paths, edit the config and run the install itself:
 
 ```text
 Install the DSH plugin dsh-session-delete (GitHub: xffwlkjgzs88/dsh-session-delete):
@@ -83,7 +91,7 @@ Do not upgrade Node or DSH.
 }
 ```
 
-`npm install` in that profile directory, then restart DSH. Verify with `/session-delete/ping` → `{"ok":true,...,"version":"0.3.1"}`.
+`npm install` in that profile directory, then restart DSH. Verify with `/session-delete/ping` → `{"ok":true,...,"version":"0.3.2"}`.
 
 ## Two UI changes, both disclosed
 
@@ -100,7 +108,7 @@ localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')
 ## API
 
 ```http
-GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.1"}
+GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.2"}
 GET  /session-delete/state             → registry view vs. on-disk view
 GET  /session-delete/size?sessionId=…  → bytes this session occupies
 POST /session-delete/delete            → {"sessionId":"…"} or {"sessionId":"…","force":true}
@@ -117,21 +125,18 @@ Details: [docs/api.md](docs/api.md), internals: [docs/internals.md](docs/interna
 
 ## Compatibility
 
-Measured, not assumed:
+What has actually been checked — not a support matrix:
 
-| | |
-|---|---|
-| DSH | **0.2.0-rc.2 desktop** (FileVersion 0.2.0-rc.2) |
-| OS | Windows 11 |
-| Node | 24.x locally (only matters for `npm install`) |
-| Plugin | 0.3.1 |
+| | Value | Level |
+|---|---|---|
+| DSH | 0.2.0-rc.2 desktop | **ran for real** |
+| Plugin | 0.2.0 | running on this machine, `/ping` reports it |
+| Plugin | 0.3.2 (this repo) | **static only**: `node --check` + 4 unit tests; UI not re-run locally |
+| OS | Windows 11 | real machine |
 
-| Your version | Verdict |
-|---|---|
-| DSH 0.2.0-rc.2 desktop | works, this is the dev environment |
-| DSH 0.2.x other builds | probably works, as long as the four surfaces exist |
-| DSH 0.1.x | don't — service and slot names differ |
-| DSH 0.3.x+ | unknown — renamed slots/services fail silently |
+Unverified: web build, DSH 0.1.x, macOS / Linux, future versions.
+
+Rough verdict: 0.2.0-rc.2 → works; other 0.2.x → probably; 0.1.x → don't; 0.3.x+ → unknown.
 
 Failure is graceful, never fatal:
 
