@@ -10,7 +10,7 @@
 </p>
 
 <p>
-  <a href="https://github.com/YG/dsh-session-delete/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/YG/dsh-session-delete?style=flat-square&label=Stars&color=2f81f7&logo=github&logoColor=white"></a>
+  <a href="https://github.com/xffwlkjgzs88/dsh-session-delete/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/YG/dsh-session-delete?style=flat-square&label=Stars&color=2f81f7&logo=github&logoColor=white"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-3fb950?style=flat-square"></a>
   <a href="#"><img alt="Awesome" src="https://img.shields.io/badge/awesome-DSH%20plugin-ff6b6b?style=flat-square"></a>
   <a href="#compatibility"><img alt="DSH" src="https://img.shields.io/badge/dsh-0.2.x-8b5cf6?style=flat-square"></a>
@@ -147,7 +147,7 @@ Services available ⇒ never double-write `workspace.json`. Services absent ⇒ 
 [MIT](LICENSE) © YG
 
 <div align="center">
-  <a href="https://star-history.com/#YG/dsh-session-delete&Date">
-    <img src="https://api.star-history.com/svg?repos=YG/dsh-session-delete&type=Date" alt="Star History Chart" width="640" />
+  <a href="https://star-history.com/#xffwlkjgzs88/dsh-session-delete&Date">
+    <img src="https://api.star-history.com/svg?repos=xffwlkjgzs88/dsh-session-delete&type=Date" alt="Star History Chart" width="640" />
   </a>
 </div>

@@ -11,7 +11,7 @@
 
 <!-- 发布后把 YG 换成你自己的 GitHub 用户名（一共 4 处，含文末 Star History） -->
 <p>
-  <a href="https://github.com/YG/dsh-session-delete/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/YG/dsh-session-delete?style=flat-square&label=Stars&color=2f81f7&logo=github&logoColor=white"></a>
+  <a href="https://github.com/xffwlkjgzs88/dsh-session-delete/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/YG/dsh-session-delete?style=flat-square&label=Stars&color=2f81f7&logo=github&logoColor=white"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-3fb950?style=flat-square"></a>
   <a href="#"><img alt="Awesome" src="https://img.shields.io/badge/awesome-DSH%20plugin-ff6b6b?style=flat-square"></a>
   <a href="#"><img alt="Hub" src="https://img.shields.io/badge/Hub-dsh--plugin-6e7681?style=flat-square"></a>
@@ -120,7 +120,7 @@ v0.2 照这个结论重写：先让宿主的服务「遗忘」，再动磁盘，
 ### 方式 B：本地 tgz
 
 ```bash
-git clone https://github.com/YG/dsh-session-delete.git
+git clone https://github.com/xffwlkjgzs88/dsh-session-delete.git
 cd dsh-session-delete
 npm pack                      # 得到 dsh-session-delete-0.2.0.tgz
 ```
@@ -309,7 +309,7 @@ curl -X POST http://127.0.0.1:19387/session-delete/delete \
 如果它帮你省下了「手动删目录 + 重启 + 又回来」的那几个来回，点个 ⭐ 就够了。
 
 <div align="center">
-  <a href="https://star-history.com/#YG/dsh-session-delete&Date">
-    <img src="https://api.star-history.com/svg?repos=YG/dsh-session-delete&type=Date" alt="Star History Chart" width="640" />
+  <a href="https://star-history.com/#xffwlkjgzs88/dsh-session-delete&Date">
+    <img src="https://api.star-history.com/svg?repos=xffwlkjgzs88/dsh-session-delete&type=Date" alt="Star History Chart" width="640" />
   </a>
 </div>
