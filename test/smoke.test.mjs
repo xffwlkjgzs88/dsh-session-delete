@@ -1,7 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 
 import { name, inject, apply } from '../lib/index.js'
+
+const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
 
 function fakeCtx() {
   const routes = []
@@ -24,13 +27,14 @@ test('导出名与依赖声明稳定', () => {
   assert.deepEqual(inject, ['webServer'])
 })
 
-test('注册三条路由，路径不重复', () => {
+test('注册四条路由，路径不重复', () => {
   const ctx = fakeCtx()
   apply(ctx)
   const paths = ctx.routes.map((route) => route.path).sort()
   assert.deepEqual(paths, [
     '/session-delete/delete',
     '/session-delete/ping',
+    '/session-delete/size',
     '/session-delete/state',
   ])
   assert.equal(new Set(paths).size, paths.length)
@@ -55,7 +59,7 @@ test('ping 处理器返回版本与 home', () => {
 
   const payload = JSON.parse(captured.body)
   assert.equal(payload.ok, true)
-  assert.equal(payload.version, '0.2.0')
+  assert.equal(payload.version, pkg.version)
   assert.equal(typeof payload.home, 'string')
   assert.match(captured.headers['content-type'], /application\/json/)
 })

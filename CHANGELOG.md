@@ -2,14 +2,25 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
-## [未发布]
+## [0.3.0]
+
+### Added
+
+- `GET /session-delete/size?sessionId=…`：删除前先算这条会话占多少（正文目录 + 投影缓存），弹窗里显示「占用 48.2 MB」。拿不到就整行不显示，不影响删除。
+- README 顶部新增「让 AI 帮你装」：一段可以直接粘给 AI 的安装指令，包含备份、判断 profile、改两处配置、跑 `npm install`、重启与验证，以及"不要升级 Node / DSH"的限制。
+- 兼容性章节重写：说明只实测过 DSH 0.2.x，以及缺 `workspaceRegistry` / `sessions` / `webServer` / 座位名时的四种降级表现和自检办法。
+
+### Changed
+
+- 删除弹窗重做：蒙层加磨砂、卡片入场动画、危险按钮改实心红、加一条 meta 行显示会话短 id 与占用体积；默认焦点落在「取消」，误按回车是取消而不是删除。跟随 `prefers-reduced-motion`。
+- 行内按钮：静止半透明，悬停变红并轻微上移，按下回弹，键盘 focus 有描边。
+- README 删掉关于 `cordis.patch.yml` 的那句补充说明。
 
 ### Docs
 
-- 新增 [DISCLAIMER.md](DISCLAIMER.md)：完整免责声明（中英），覆盖不可恢复的数据删除、强制删除中断、无鉴权路由、非官方插件。
-- 新增 [CONTRIBUTING.md](CONTRIBUTING.md)：提 issue 前的自查项与 PR 规则。
-- README 增加「用户须知」「已知问题」「关于作者」，作者信息与联系方式写入 `package.json`。
-- 重写中英文 README 的行文，删掉特性清单式表格，改成按「起因 → 发生了什么 → 怎么用」讲。
+- 新增 [DISCLAIMER.md](DISCLAIMER.md) 与 [CONTRIBUTING.md](CONTRIBUTING.md)。
+- 作者信息写入 `package.json`，README 增加「关于作者」与「用户须知」。
+- 中英文 README 按「起因 → 发生了什么 → 安装 → 用法」重写。
 
 ## [0.2.0] — 首个公开版本
 

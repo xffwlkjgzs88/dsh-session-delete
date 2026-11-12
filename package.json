@@ -1,6 +1,6 @@
 {
   "name": "dsh-session-delete",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "给 DSH 会话行加一个真删除按钮：先让宿主 registry 遗忘（内存 + 磁盘），再删正文/投影缓存，最后广播移除事件。",
   "type": "module",
   "main": "lib/index.js",
@@ -69,9 +69,15 @@
     "react": "^18.2.0"
   },
   "peerDependenciesMeta": {
-    "@deepseek-ai/dsh-client-runtime": { "optional": true },
-    "@deepseek-ai/dsh-client-ui-slots": { "optional": true },
-    "@deepseek-ai/dsh-host-webserver": { "optional": true }
+    "@deepseek-ai/dsh-client-runtime": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-client-ui-slots": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-host-webserver": {
+      "optional": true
+    }
   },
   "dependencies": {}
 }

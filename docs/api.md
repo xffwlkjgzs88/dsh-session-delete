@@ -1,6 +1,6 @@
 # HTTP 接口
 
-三条路由都是同源、无鉴权、`no-store`。前缀固定 `/session-delete`。
+四条路由都是同源、无鉴权、`no-store`。前缀固定 `/session-delete`。
 
 约定：
 
@@ -20,10 +20,26 @@ curl http://127.0.0.1:19387/session-delete/ping
 ```
 
 ```json
-{ "ok": true, "home": "C:\\Users\\you\\.dsh", "version": "0.2.0" }
+{ "ok": true, "home": "C:\\Users\\you\\.dsh", "version": "0.3.0" }
 ```
 
 `home` 优先取环境变量 `DSH_HOME`，否则 `~/.dsh`。
+
+---
+
+## `GET /session-delete/size?sessionId=…`
+
+弹窗打开时用它算「这条会话占多少」，只读，不动任何东西。
+
+```bash
+curl "http://127.0.0.1:19387/session-delete/size?sessionId=session-9f0c"
+```
+
+```json
+{ "ok": true, "id": "session-9f0c", "bytes": 49315840, "kb": 48160.0, "dirs": 1, "cache": true }
+```
+
+`dirs` 是命中几个会话目录（正常是 1），`cache` 表示投影缓存在不在。目录不存在时返回 `bytes: 0`，不报错 —— 前端拿不到就干脆不显示这一行。
 
 ---
 

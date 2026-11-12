@@ -9,12 +9,11 @@
   <sub>不是归档，是删掉</sub>
 </p>
 
-<!-- 替换仓库 owner 时，这几行一起改 -->
 <p>
   <a href="https://github.com/xffwlkjgzs88/dsh-session-delete/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/xffwlkjgzs88/dsh-session-delete?style=flat-square&label=Stars&color=2f81f7&logo=github&logoColor=white"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-3fb950?style=flat-square"></a>
   <a href="DISCLAIMER.md"><img alt="Disclaimer" src="https://img.shields.io/badge/免责声明-必读-d29922?style=flat-square"></a>
-  <a href="#兼容性"><img alt="DSH" src="https://img.shields.io/badge/dsh-0.2.x-8b5cf6?style=flat-square"></a>
+  <a href="#兼容性"><img alt="DSH" src="https://img.shields.io/badge/dsh-0.2.x%20%7C%200.3.x-8b5cf6?style=flat-square"></a>
   <a href="#兼容性"><img alt="Node" src="https://img.shields.io/badge/Node.js-%3E%3D18-339933?style=flat-square&logo=nodedotjs&logoColor=white"></a>
   <a href="https://wpa.qq.com/msgrd?v=3&amp;uin=811588817&amp;site=qq&amp;menu=yes"><img alt="QQ" src="https://img.shields.io/badge/QQ-811588817-12B7F5?style=flat-square&logo=tencentqq&logoColor=white"></a>
 </p>
@@ -27,11 +26,15 @@
 
 ---
 
-<img src="assets/preview.svg" width="100%" alt="删除确认框（示意图）" />
+<img src="assets/preview.png" width="100%" alt="删除弹窗（效果图）" />
 
 ## 起因
 
-DSH 侧栏只有归档，没有删除。我一开始的做法很粗暴：直接去 `~/.dsh/sessions/` 把会话目录删了。
+DSH 侧栏只有归档，没有删除。
+
+我这人有点强迫症，看着那串越来越长的归档列表就膈应 —— 那些会话我根本不会再打开，可它们还在硬盘上占着地方。归档不是删除，它只是把东西塞进抽屉，抽屉还是会满。
+
+一开始的做法很粗暴：直接去 `~/.dsh/sessions/` 把会话目录删了。
 
 删完看着确实没了。过几分钟又冒出来，重启之后更是原样回来。
 
@@ -58,9 +61,32 @@ DSH 侧栏只有归档，没有删除。我一开始的做法很粗暴：直接�
 
 ## 安装
 
-Node.js 18 以上，DSH 0.2 以上。改完必须重启 DSH，插件是启动时加载的。
+### 不想动手？把这段丢给你的 AI
 
-web 版改 `~/.dsh/profiles/web/package.json`，桌面版改 `desktop` 那份。加两处：
+下面这段整段复制，粘到 DSH 里的对话、Cursor、Claude、ChatGPT 都行，它自己会找路径、改配置、跑安装：
+
+```text
+帮我安装 DSH 插件 dsh-session-delete（GitHub: xffwlkjgzs88/dsh-session-delete），按这个顺序做：
+
+1. 先判断我用的哪个版本：存在 ~/.dsh/profiles/web 就是 web 版，存在 ~/.dsh/profiles/desktop 就是桌面版；
+   两个都在的话，问我用哪个，不要自己猜。
+2. 把该目录下的 package.json 复制一份备份，命名 package.json.bak-before-session-delete。
+3. 在 dependencies 里加上：
+   "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete"
+4. 在 dsh.profile.bundles 数组末尾加上 "dsh-session-delete"。
+5. 在该目录执行 npm install。
+6. 告诉我怎么重启 DSH（关掉再打开进程即可，不用重启电脑、不用更新客户端）。
+7. 重启后让我访问 http://127.0.0.1:19387/session-delete/ping ，
+   返回 {"ok":true,...} 就算装好了；如果报错，把错误和 package.json 贴给我。
+
+注意：不要升级 Node，不要升级 DSH，不要动除以上两处以外的任何字段。
+```
+
+装完**只需要重启 DSH 自己**，不用更新客户端，也不用重装软件。
+
+### 手动装
+
+Node.js 18 以上，DSH 0.2 以上。web 版改 `~/.dsh/profiles/web/package.json`，桌面版改 `desktop` 那份，加两处：
 
 ```jsonc
 {
@@ -75,18 +101,16 @@ web 版改 `~/.dsh/profiles/web/package.json`，桌面版改 `desktop` 那份。
 }
 ```
 
-同目录 `npm install`，重启。
+同目录 `npm install`，重启 DSH。
 
-装没装上，访问一下就知道：
+### 确认装上了
 
 ```text
 http://127.0.0.1:19387/session-delete/ping
-{"ok":true,"home":"C:\\Users\\you\\.dsh","version":"0.2.0"}
+{"ok":true,"home":"C:\\Users\\you\\.dsh","version":"0.3.0"}
 ```
 
-不想挂 git 也行：Release 页有 `dsh-session-delete-0.2.0.tgz`，`npm pack` 自己打一个也行，用 `file:` 引进来；或者把目录直接丢进 `node_modules/`，再在 `bundles` 里加一行。
-
-> 客户端那一半靠宿主座位注入：`dsh.bundle.patch` 会自动带上 `cordis.patch.yml`，不用你去改 `cordis.yml`。
+不想挂 git 也行：Release 页有打包好的 `.tgz`，`npm pack` 自己打一个也行，用 `file:` 引进来；或者把目录直接丢进 `node_modules/`，再在 `bundles` 里加一行。
 
 ## 用起来
 
@@ -94,15 +118,18 @@ http://127.0.0.1:19387/session-delete/ping
 
 第一次点，按钮变红问「确认?」，3.5 秒内有效，过期自动复原。第二次点才真删，删完页面自己刷新。
 
+弹窗里会顺带告诉你这条会话占多少磁盘 —— 满足一下"删完到底省了多少"的好奇心。
+
 如果这条会话还在跑 —— 包括你正看着的这条 —— 会先弹个框告诉你这一轮会被打断，确认了才动手。删当前会话时后端是**先回包再执行**的，不然响应发不出去，浏览器会一直转圈等超时。
 
 ## 接口
 
-三条路由挂在 `/session-delete` 下，同源、无鉴权。
+四条路由挂在 `/session-delete` 下，同源、无鉴权。
 
 ```http
-GET  /session-delete/ping     → {"ok":true,"home":"…","version":"0.2.0"}
+GET  /session-delete/ping     → {"ok":true,"home":"…","version":"0.3.0"}
 GET  /session-delete/state    → 宿主认为有什么 vs 磁盘上实际有什么
+GET  /session-delete/size?sessionId=…  → 这条会话占多少字节（弹窗里显示的就是它）
 POST /session-delete/delete   → {"sessionId":"…"} 或 {"sessionId":"…","force":true}
 ```
 
@@ -122,13 +149,27 @@ POST /session-delete/delete   → {"sessionId":"…"} 或 {"sessionId":"…","fo
 
 ## 兼容性
 
-| | |
+先说清楚：**我只在自己的机器上跑过 —— DSH 0.2.x + Windows**。其它版本我没实测过，所以不敢说"通用"。
+
+但可以负责任地讲：**它不会把你的 DSH 搞崩**。
+
+插件只碰宿主四个公开面：`ctx.get('workspaceRegistry')`、`ctx.get('sessions')`、`ctx.webServer.register`、`ctx.slots.inject`。任何一个不满足，它就降级或者干脆不出现，不会抛错打断宿主：
+
+| 缺什么 | 实际表现 |
 |---|---|
-| DSH web（`dsh web`，profile `web`） | 0.2.x 上跑过 |
-| DSH 桌面版（EXE，profile `desktop`） | 同一套路由和按钮 |
-| Node.js | ≥ 18 |
-| 系统 | Windows / macOS 实测过；Linux 路径逻辑一样但没跑 |
-| 第三方依赖 | 没有 |
+| `workspaceRegistry` 拿不到 | 退回直接改 `workspace.json`（先备份），功能照常 |
+| `sessions` 拿不到 | 跳过 detach，其余步骤照做 |
+| `webServer` 没有（headless / TUI） | 宿主半边整块不加载，静默 |
+| 座位名改了 | 按钮不出现，不报错 |
+
+装完想确认自己这版能跑，看这两个地址就够：
+
+```text
+/session-delete/ping    → 有返回 = 宿主半边活着
+/session-delete/state   → registry 是 service 就走主路；file-only 说明在降级；absent 说明服务没拿到
+```
+
+不放心的话，先拿一条**你不要的测试会话**删一次试试，别一上来删正在用的。
 
 ## 已知问题
 
@@ -144,14 +185,14 @@ POST /session-delete/delete   → {"sessionId":"…"} 或 {"sessionId":"…","fo
 - 删了就是删了，没有软删除，没有撤销，我也找不回来。
 - `force` 的强制删除会打断那条会话正在跑的回合；删的是当前会话的话，你眼前这一轮就断了。
 - 用之前建议先把 `~/.dsh/sessions` 和 `storages/workspace.json` 拷一份，出事了还能回滚。
-- **别把 DSH 的 web 端口开到公网。** 这三条路由没鉴权，谁都能 POST，等于把删除按钮挂在公网上。
+- **别把 DSH 的 web 端口开到公网。** 这四条路由没鉴权，谁都能 POST，等于把删除按钮挂在公网上。
 - 用这个插件造成的数据丢失、工作中断、业务损失，作者不承担责任。完整条款在 [DISCLAIMER.md](DISCLAIMER.md)，不同意就别装。
 
 ## 关于作者
 
 **小富富** · QQ **811588817**
 
-- 插件本身的问题：先看上面「已知问题」，再把 `/session-delete/state` 的返回和 `steps` 贴过来，加 QQ 说也行。
+- 插件本身的问题：先看上面「已知问题」和「兼容性」，再把 `/session-delete/state` 的返回和 `steps` 贴过来，加 QQ 说也行。
 - 接活：网站、小程序搭建与部署，服务器、域名、支付接口对接，一条龙。校园项目、企业内部工具、要对接物流或支付的，都可以聊。
 
 ## 许可

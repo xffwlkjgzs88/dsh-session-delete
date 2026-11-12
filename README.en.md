@@ -26,7 +26,7 @@
 
 ---
 
-<img src="assets/preview.svg" width="100%" alt="Delete dialog (mock)" />
+<img src="assets/preview.png" width="100%" alt="Delete dialog" />
 
 ## Why this exists
 
@@ -55,6 +55,29 @@ Without the `workspaceRegistry` service (renamed, or headless), it falls back to
 
 ## Install
 
+### Let an AI do it
+
+Paste this into any assistant (the DSH chat itself, Cursor, Claude, ChatGPT):
+
+```text
+Install the DSH plugin dsh-session-delete (GitHub: xffwlkjgzs88/dsh-session-delete):
+
+1. Find my profile: ~/.dsh/profiles/web for the web build, ~/.dsh/profiles/desktop for the desktop build.
+   If both exist, ask me instead of guessing.
+2. Back up that package.json as package.json.bak-before-session-delete.
+3. Add "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete" to dependencies.
+4. Append "dsh-session-delete" to dsh.profile.bundles.
+5. Run npm install in that directory.
+6. Tell me how to restart DSH (quit and relaunch — no OS reboot, no client update).
+7. After restart, have me open http://127.0.0.1:19387/session-delete/ping and expect {"ok":true,...}.
+
+Do not upgrade Node or DSH, and do not touch any other field.
+```
+
+Only DSH itself needs a restart — no client update, no reinstall.
+
+### Manual
+
 Node.js 18+, DSH 0.2+. Restart required — bundles load at startup.
 
 Edit the profile you actually use (`~/.dsh/profiles/web/package.json` or `…/desktop/package.json`):
@@ -76,7 +99,7 @@ Run `npm install` in that directory, then restart DSH.
 
 ```text
 GET http://127.0.0.1:19387/session-delete/ping
-{"ok":true,"home":"C:\\Users\\you\\.dsh","version":"0.2.0"}
+{"ok":true,"home":"C:\\Users\\you\\.dsh","version":"0.3.0"}
 ```
 
 A prebuilt `.tgz` is attached to the release page; `npm pack` works too, as does dropping the directory into `node_modules/`.
@@ -88,8 +111,9 @@ Hover a session row and a bin icon shows up after the `···`. The first click 
 ## API
 
 ```http
-GET  /session-delete/ping     → {"ok":true,"home":"…","version":"0.2.0"}
+GET  /session-delete/ping     → {"ok":true,"home":"…","version":"0.3.0"}
 GET  /session-delete/state    → registry view vs. on-disk view
+GET  /session-delete/size?sessionId=…  → bytes this session occupies
 POST /session-delete/delete   → {"sessionId":"…"} or {"sessionId":"…","force":true}
 ```
 
@@ -104,12 +128,18 @@ POST /session-delete/delete   → {"sessionId":"…"} or {"sessionId":"…","for
 
 ## Compatibility
 
-| | |
+Only verified on **DSH 0.2.x / Windows**. I can't call it universal, but I can say this: **it won't break your DSH**.
+
+The plugin touches four public surfaces — `workspaceRegistry`, `sessions`, `webServer.register`, `slots.inject`. If one is missing it degrades or simply stays invisible:
+
+| Missing | Behaviour |
 |---|---|
-| DSH web / desktop | 0.2.x tested |
-| Node.js | ≥ 18 |
-| OS | Windows and macOS tested; Linux uses the same path logic but untested |
-| Dependencies | none |
+| `workspaceRegistry` | falls back to rewriting `workspace.json` (with a backup) |
+| `sessions` | skips the detach step |
+| `webServer` (headless / TUI) | host half never loads, silently |
+| slot name changed | button never appears, no error |
+
+Check your build with `/session-delete/ping` (alive?) and `/session-delete/state` (`registry: service` = primary path, `file-only` = degraded, `absent` = service not found). Test on a session you don't need first.
 
 ## Known issues
 

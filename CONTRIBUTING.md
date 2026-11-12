@@ -22,7 +22,7 @@
 
 ```bash
 npm run lint    # node --check 两个文件
-npm test        # 冒烟测试：导出了什么、注册了哪三条路由
+npm test        # 冒烟测试：导出了什么、注册了哪几条路由
 ```
 
 CI 也会跑这两个，红了不会合。
