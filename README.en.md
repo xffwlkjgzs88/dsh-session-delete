@@ -5,16 +5,17 @@
 <h1>dsh-session-delete</h1>
 
 <p>
-  <b>A real “delete” button for DSH session rows</b><br/>
-  <sub>make the host registry forget → remove body &amp; projection cache → broadcast removal → watchdog re-check</sub>
+  <b>A delete button that actually deletes DSH sessions</b><br/>
+  <sub>not archive — remove</sub>
 </p>
 
 <p>
-  <a href="https://github.com/xffwlkjgzs88/dsh-session-delete/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/YG/dsh-session-delete?style=flat-square&label=Stars&color=2f81f7&logo=github&logoColor=white"></a>
+  <a href="https://github.com/xffwlkjgzs88/dsh-session-delete/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/xffwlkjgzs88/dsh-session-delete?style=flat-square&label=Stars&color=2f81f7&logo=github&logoColor=white"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-3fb950?style=flat-square"></a>
-  <a href="#"><img alt="Awesome" src="https://img.shields.io/badge/awesome-DSH%20plugin-ff6b6b?style=flat-square"></a>
+  <a href="DISCLAIMER.md"><img alt="Disclaimer" src="https://img.shields.io/badge/disclaimer-read-d29922?style=flat-square"></a>
   <a href="#compatibility"><img alt="DSH" src="https://img.shields.io/badge/dsh-0.2.x-8b5cf6?style=flat-square"></a>
   <a href="#compatibility"><img alt="Node" src="https://img.shields.io/badge/Node.js-%3E%3D18-339933?style=flat-square&logo=nodedotjs&logoColor=white"></a>
+  <a href="https://qm.qq.com/q/811588817"><img alt="QQ" src="https://img.shields.io/badge/QQ-811588817-12B7F5?style=flat-square&logo=tencentqq&logoColor=white"></a>
 </p>
 
 <p>
@@ -25,129 +26,107 @@
 
 ---
 
-> **TL;DR** — Delete a session in DSH's sidebar, restart, and it comes back. This plugin actually deletes it.
+<img src="assets/preview.svg" width="100%" alt="Delete dialog (mock)" />
 
-<img src="assets/preview.svg" width="100%" alt="Delete confirmation dialog (mock)" />
+## Why this exists
 
-## Why
+DSH only archives sessions; there is no delete. The obvious workaround is removing the session directory under `~/.dsh/sessions/`. It looks fine for a minute, then the session reappears — and after a restart it is back for good.
 
-DSH has no session delete — only archive. The intuitive workaround is deleting the session directory on disk. It looks like it worked, then the session reappears a minute later, or after a restart.
-
-v0.1 did exactly that, and the on-disk backups tell the whole story:
+The reason took a night to find: `WorkspaceRegistry` keeps the whole sidebar state **in memory**. Deleting files doesn't tell it anything, and the next write flushes that in-memory state back over `workspace.json`, bringing the removed `sessionId` along. The backups showed it plainly:
 
 ```text
-12:48:57  workspace.json: (empty)                    ← plugin deleted it
-12:49:14  workspace.json: host flush, updatedAt changed
-12:49:20  workspace.json: d2f98c9f, 3caf4ef1         ← deleted ids are back
+12:48:57  workspace.json: (empty)                    plugin deleted it
+12:49:14  workspace.json: host flush, updatedAt      host writes back
+12:49:20  workspace.json: d2f98c9f, 3caf4ef1         deleted ids are back
 ```
 
-**Root cause**: DSH's `WorkspaceRegistry` holds authoritative state **in memory**. Any other write — creating a session, archiving, pinning, renaming — flushes that in-memory state back over `workspace.json`, resurrecting the removed `sessionId`. Live sessions in `SessionStore` were never detached at all.
+So the order here is inverted: make the host forget first, touch the disk second, then watch for a few seconds in case it writes back.
 
-> **Touching only files, without the live host services, cannot delete a session.**
+## What happens when you delete one
 
-v0.2 is built around that conclusion: let the services forget first, touch the disk second, and add a watchdog for the flush-back.
+1. A running session is stopped first (`archiveSession({ stopActivity: true })`), then 300 ms for the last flush to land.
+2. Detach from `SessionStore`, firing `session/disposed`.
+3. `detachSession(id)` on every workspace entity, plus cleaning `archived` / `pinned`.
+4. Remove `sessions/<bucket>/<id>/` and the projection cache JSON.
+5. `emit('api-session/removed')` so the row drops immediately.
+6. Re-check at 1.2 s and 4 s; if the id came back, clean it again.
 
-## Features
-
-| | Feature | Notes |
-|:--:|---|---|
-| 🗑 | Row-level delete button | Appears on hover after `···`, no permanent visual noise |
-| ⛓ | Registry-level forget | `detachSession` + clears `archived` / `pinned` sets |
-| 🧊 | Three places at once | `sessions/<bucket>/<id>/`, projection cache, sidebar record |
-| ⚡ | Instant row removal | `emit('api-session/removed', id)` — no full reload needed |
-| 🐕 | Watchdog | Re-checks at 1.2 s / 4 s and cleans again if the id resurfaces |
-| 🧯 | Fallback | Without `workspaceRegistry`, rewrites JSON and keeps a timestamped `.bak` |
-| 🪟 | Theme aware | Uses host `--dsw-alias-*` tokens, works in light and dark |
-| 🧹 | Client state cleanup | Removes `dsh.conversation.<id>`, `dsh.sidebar-right.v1.<id>`, `dsh.sessions.current` |
-| ⚙️ | Update row relocated | Hides the native sidebar update indicator, adds an equivalent row under Settings → General |
-| 0️⃣ | Zero runtime deps | Two files, no third-party packages, all timers `unref`ed |
+Without the `workspaceRegistry` service (renamed, or headless), it falls back to rewriting `workspace.json` and keeps a `workspace.json.bak-<timestamp>`. When the service is there, it never double-writes — two writers over one JSON file is how you get unreproducible bugs.
 
 ## Install
 
-Requirements: Node.js ≥ 18, DSH ≥ 0.2. **Restart DSH after editing** — bundles load at startup.
+Node.js 18+, DSH 0.2+. Restart required — bundles load at startup.
 
-Edit the profile you actually use (`~/.dsh/profiles/<profile>/package.json`, `web` for `dsh web`, `desktop` for the desktop build):
+Edit the profile you actually use (`~/.dsh/profiles/web/package.json` or `…/desktop/package.json`):
 
 ```jsonc
 {
   "dependencies": {
-    "dsh-session-delete": "github:YG/dsh-session-delete"
+    "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete"
   },
   "dsh": {
     "profile": {
-      "bundles": ["@deepseek-ai/dsh-base", "…", "dsh-session-delete"]
+      "bundles": ["…existing…", "dsh-session-delete"]
     }
   }
 }
 ```
 
-Then `npm install` in that directory and restart DSH. Local tgz (`npm pack` → `file:C:/path/to.tgz`) and plain copy into `node_modules/` work the same way.
-
-Verify:
+Run `npm install` in that directory, then restart DSH.
 
 ```text
 GET http://127.0.0.1:19387/session-delete/ping
 {"ok":true,"home":"C:\\Users\\you\\.dsh","version":"0.2.0"}
 ```
 
+A prebuilt `.tgz` is attached to the release page; `npm pack` works too, as does dropping the directory into `node_modules/`.
+
 ## Usage
 
-Hover a session row in the sidebar; a 🗑 appears after the `···`. First click turns it into “Confirm? …” (valid for 3.5 s). Second click deletes for real. Sessions that are running ask for explicit confirmation, then go through with `force: true` — the host acknowledges before acting, so deleting the session you are looking at still returns a response.
+Hover a session row and a bin icon shows up after the `···`. The first click turns it into a red “Confirm?” valid for 3.5 s; the second click deletes. Running sessions ask separately, because `force` interrupts the turn in progress. When you delete the session you're looking at, the server replies *before* acting — otherwise the response never gets out.
 
-## HTTP API
+## API
 
 ```http
-GET  /session-delete/ping                 → {ok, home, version}
-GET  /session-delete/state                → host view vs. on-disk view
-POST /session-delete/delete               → {sessionId} | {sessionId, force:true}
-                                            200 done / 202 deferred / 409 running / 400 invalid
+GET  /session-delete/ping     → {"ok":true,"home":"…","version":"0.2.0"}
+GET  /session-delete/state    → registry view vs. on-disk view
+POST /session-delete/delete   → {"sessionId":"…"} or {"sessionId":"…","force":true}
 ```
 
-`steps` in the response is a per-step log; failures are reported as `fail: …` rather than hidden.
+| Result | Response |
+|---|---|
+| Deleted | `200` + `steps` |
+| Running, no force | `409 {"code":"running","current":true}` |
+| Running, force | `202`, executed 60 ms later |
+| Bad id / bad method | `400` / `405` |
 
-## How it works
-
-1. Stop activity of a running session (`archiveSession({ stopActivity: true })`).
-2. Detach from `SessionStore`, firing `session/disposed`.
-3. `detachSession(id)` on every workspace entity, clear `archived` / `pinned`.
-4. Delete `sessions/<bucket>/<id>/` and the projection cache JSON.
-5. `emit('api-session/removed', id)` so the browser list drops the row immediately.
-6. Watchdog at 1.2 s / 4 s re-checks and re-forgets if the host flushed the id back.
-
-Services available ⇒ never double-write `workspace.json`. Services absent ⇒ rewrite it, keeping a backup.
+`steps` records each step; failures read `fail: …` instead of pretending otherwise. `/state` is the debugging entry point — it lines up `sessionIds` from the registry against what is actually on disk. See [docs/api.md](docs/api.md) and [docs/internals.md](docs/internals.md).
 
 ## Compatibility
 
 | | |
 |---|---|
-| DSH web (`dsh web`, profile `web`) | ✅ verified on 0.2.x |
-| DSH desktop (EXE, profile `desktop`) | ✅ same routes and button |
+| DSH web / desktop | 0.2.x tested |
 | Node.js | ≥ 18 |
-| OS | Windows / macOS / Linux |
-| Third-party deps | none |
+| OS | Windows and macOS tested; Linux uses the same path logic but untested |
+| Dependencies | none |
 
-## Troubleshooting
+## Known issues
 
-| Symptom | Cause | Fix |
-|---|---|---|
-| No 🗑 on hover | Not in `bundles`, or not restarted | Check `bundles`, restart |
-| `/session-delete/ping` 404 | Host half not loaded (no `webServer`) | Not a headless/TUI scenario |
-| Comes back after restart | Old file-only deletion path | Use 0.2, then check `/state` |
-| 409 `running` | Session is live — expected | Confirm the force dialog |
-| Blank page after deleting current session | Reload in progress | ~0.9 s and you land in a fresh session |
+- Slot names are hard-coded (`sidebar.workspaces.session.row.action`, `shell.overlay`). If DSH renames them, the button disappears silently — fix the two constants at the top of `lib/client.js`.
+- No de-duplication for concurrent deletes of the same id.
+- The `workspace.json` fallback only removes ids; it does not migrate structure.
 
-## Notice
+## Read before use
 
-- Deletion is permanent — no trash bin, no soft delete.
-- Force delete interrupts the running turn of that session.
-- Do not expose the DSH web port publicly: these routes are same-origin and unauthenticated.
+**Deletion is permanent.** No trash, no undo, and no way for the author to recover it. Back up `~/.dsh/sessions` and `storages/workspace.json` first. The HTTP routes are unauthenticated — never expose the DSH web port publicly. The author accepts no liability for data loss or interrupted work; the full terms are in [DISCLAIMER.md](DISCLAIMER.md).
+
+## Author
+
+**小富富 (Xiao Fufu)** · QQ **811588817**
+
+Bug reports: include the `/session-delete/state` output. Also available for website / mini-program build and deployment, servers, domains, and payment API integration.
 
 ## License
 
-[MIT](LICENSE) © YG
-
-<div align="center">
-  <a href="https://star-history.com/#xffwlkjgzs88/dsh-session-delete&Date">
-    <img src="https://api.star-history.com/svg?repos=xffwlkjgzs88/dsh-session-delete&type=Date" alt="Star History Chart" width="640" />
-  </a>
-</div>
+[MIT](LICENSE) © 小富富

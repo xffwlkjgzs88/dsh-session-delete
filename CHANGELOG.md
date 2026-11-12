@@ -2,6 +2,15 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [未发布]
+
+### Docs
+
+- 新增 [DISCLAIMER.md](DISCLAIMER.md)：完整免责声明（中英），覆盖不可恢复的数据删除、强制删除中断、无鉴权路由、非官方插件。
+- 新增 [CONTRIBUTING.md](CONTRIBUTING.md)：提 issue 前的自查项与 PR 规则。
+- README 增加「用户须知」「已知问题」「关于作者」，作者信息与联系方式写入 `package.json`。
+- 重写中英文 README 的行文，删掉特性清单式表格，改成按「起因 → 发生了什么 → 怎么用」讲。
+
 ## [0.2.0] — 首个公开版本
 
 ### Added

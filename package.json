@@ -17,6 +17,7 @@
     "README.md",
     "README.en.md",
     "CHANGELOG.md",
+    "DISCLAIMER.md",
     "LICENSE",
     "docs/",
     "assets/"
@@ -38,7 +39,7 @@
     "sidebar",
     "cordis"
   ],
-  "author": "YG",
+  "author": "小富富 <QQ 811588817>",
   "license": "MIT",
   "repository": {
     "type": "git",
