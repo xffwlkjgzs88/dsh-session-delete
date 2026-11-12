@@ -66,23 +66,9 @@ Without the `workspaceRegistry` service it falls back to rewriting `workspace.js
 
 ### Let an AI do it
 
-Open a new session **inside DSH** and paste this to the built-in assistant — it can find the paths, edit the config and run the install itself:
+Open a new session in DSH and send:
 
-```text
-Install the DSH plugin dsh-session-delete (GitHub: xffwlkjgzs88/dsh-session-delete):
-
-1. ~/.dsh/profiles/web = web build, ~/.dsh/profiles/desktop = desktop build.
-   If both exist, ask me instead of guessing.
-2. Back up that package.json.
-3. Add "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete" to dependencies.
-4. Append "dsh-session-delete" to dsh.profile.bundles.
-5. Run npm install. If npm is missing, unzip the repo into node_modules/dsh-session-delete
-   instead — the plugin has zero dependencies, copying works.
-6. Tell me how to restart DSH (quit and relaunch — no OS reboot, no client update).
-7. Have me open http://127.0.0.1:19387/session-delete/ping and expect {"ok":true,...}.
-
-Do not upgrade Node or DSH.
-```
+> Install GitHub `xffwlkjgzs88/dsh-session-delete` into DSH: add the dependency and bundle entry to my profile's `package.json`, run `npm install`, restart, then confirm `/session-delete/ping` answers.
 
 ### Manual
 
@@ -93,7 +79,7 @@ Do not upgrade Node or DSH.
 }
 ```
 
-`npm install` in that profile directory, then restart DSH. Verify with `/session-delete/ping` → `{"ok":true,...,"version":"0.3.3"}`.
+`npm install` in that profile directory, then restart DSH. Verify with `/session-delete/ping` → `{"ok":true,...,"version":"0.3.4"}`.
 
 ## Two UI changes, both disclosed
 
@@ -110,7 +96,7 @@ localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')
 ## API
 
 ```http
-GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.3"}
+GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.4"}
 GET  /session-delete/state             → registry view vs. on-disk view
 GET  /session-delete/size?sessionId=…  → bytes this session occupies
 POST /session-delete/delete            → {"sessionId":"…"} or {"sessionId":"…","force":true}
@@ -133,7 +119,7 @@ What has actually been checked — not a support matrix:
 |---|---|---|
 | DSH | 0.2.0-rc.2 desktop | **ran for real** |
 | Plugin | 0.2.0 | running on this machine, `/ping` reports it |
-| Plugin | 0.3.3 (this repo) | **static only**: `node --check` + 4 unit tests; UI not re-run locally |
+| Plugin | 0.3.4 (this repo) | **static only**: `node --check` + 4 unit tests; UI not re-run locally |
 | OS | Windows 11 | real machine |
 
 Unverified: web build, DSH 0.1.x, macOS / Linux, future versions.

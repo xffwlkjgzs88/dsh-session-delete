@@ -2,6 +2,16 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.3.4]
+
+### Changed
+
+- 删掉「三分钟上手」整节。装 DSH 插件的人本来就在 DSH 里，不需要教他分辨自己用的是哪一版。
+- 安装节压成一段：两处配置、`npm install`、验证地址，结尾一句"发这句给 AI"。
+- AI 安装从七步清单改成一句话。
+- 常见问题从 15 条精简到 12 条，去掉「web 还是桌面版」「`~/.dsh` 在哪」这类常识条目。
+- 名词解释从 7 行压到 4 行（只留 bundle / slot / registry / `~/.dsh`）。
+
 ## [0.3.3]
 
 ### Docs

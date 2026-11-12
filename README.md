@@ -79,134 +79,29 @@ DSH 侧栏只有归档，没有删除。
 
 ## 安装
 
-### 一、让 AI 帮你装（推荐）
-
-**在 DSH 里新开一个会话**，把下面这段原样发给它 —— 就是你现在正在用的这个 AI，它自己会找路径、改配置、跑安装：
-
-```text
-帮我安装 DSH 插件 dsh-session-delete（GitHub: xffwlkjgzs88/dsh-session-delete），按顺序做：
-
-1. 判断版本：~/.dsh/profiles/web 存在就是 web 版，~/.dsh/profiles/desktop 存在就是桌面版。
-   两个都在就问我，别自己猜。
-2. 备份该目录的 package.json，命名 package.json.bak-before-session-delete。
-3. dependencies 里加：
-   "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete"
-4. dsh.profile.bundles 数组末尾加 "dsh-session-delete"。
-5. 在该目录执行 npm install；如果我这台机器没有 npm，就改成下载仓库 zip，
-   解压成 node_modules/dsh-session-delete（这个插件没有任何依赖，直接拷进去就能跑）。
-6. 告诉我怎么重启 DSH（退出进程再打开，不用重启电脑、不用更新客户端）。
-7. 重启后让我访问 http://127.0.0.1:19387/session-delete/ping ，
-   返回 {"ok":true,...} 就算成功；报错就把错误和 package.json 发给我。
-
-限制：不要升级 Node，不要升级 DSH，除上面两处外不要改任何字段。
-```
-
-### 二、自己动手
-
-改 `~/.dsh/profiles/web/package.json`（web 版）或 `~/.dsh/profiles/desktop/package.json`（桌面版），两处：
+桌面版改 `~/.dsh/profiles/desktop/package.json`，web 版改 `~/.dsh/profiles/web/package.json`。加两处：
 
 ```jsonc
 {
-  "dependencies": {
-    "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete"
-  },
-  "dsh": {
-    "profile": {
-      "bundles": ["…原有的…", "dsh-session-delete"]
-    }
-  }
+  "dependencies": { "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete" },
+  "dsh": { "profile": { "bundles": ["…原有的…", "dsh-session-delete"] } }
 }
 ```
 
 同目录 `npm install`，重启 DSH。
 
-**没有 Node / npm 也能装**：这插件零依赖，把仓库 ZIP 下下来解压，改名成 `dsh-session-delete` 丢进 `node_modules/`，再在 `bundles` 里加一行，效果一样。
+没装 Node 也行 —— 零依赖，把仓库解压成 `node_modules/dsh-session-delete` 丢进去，`bundles` 加一行就完事。
 
-### 三、确认装上了
-
-```text
-http://127.0.0.1:19387/session-delete/ping
-{"ok":true,"home":"C:\\Users\\you\\.dsh","version":"0.3.3"}
-```
-
-## 三分钟上手（不想动脑就照这个做）
-
-### 第 0 步：先搞清楚你是哪个版本
-
-| 你怎么打开 DSH 的 | 你是 | 要改的目录 |
-|---|---|---|
-| 双击桌面图标 / 开始菜单里的「DeepSeek Harness」 | 桌面版 | `profiles\desktop` |
-| 在命令行敲 `dsh web`，然后开浏览器 | web 版 | `profiles\web` |
-
-两个目录都有的，改你平时用的那个；实在不确定，两个都改也没事。
-
-### 第 1 步：打开那个文件夹
-
-按 `Win + R`，粘贴下面这行，回车：
-
-```text
-%USERPROFILE%\.dsh\profiles
-```
-
-你会看到 `desktop` 或 `web` 文件夹，双击进去。
-
-### 第 2 步：改 `package.json`
-
-用记事本（或 VS Code）打开里面的 `package.json`。要改**两处**：
-
-**第一处**，找到 `"dependencies": {` 这一段，在里面加一行 —— 注意**上一行末尾要补个逗号**：
-
-```jsonc
-"dependencies": {
-  "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete"
-}
-```
-
-如果里面本来就有别的插件，就变成这样：
-
-```jsonc
-"dependencies": {
-  "dsh-purge": "github:YuJunZhiXue/dsh-purge",          ← 注意逗号
-  "dsh-session-delete": "github:xffwlkjgzs88/dsh-session-delete"
-}
-```
-
-**第二处**，找到 `"bundles": [` 这一段，在数组最后加一项：
-
-```jsonc
-"bundles": [
-  "@deepseek-ai/dsh-base",
-  "dsh-session-delete"
-]
-```
-
-同样注意上一项后面要加逗号。
-
-存盘。**如果用记事本，保存时确认编码是 UTF-8，不要用 ANSI。**
-
-### 第 3 步：装依赖
-
-在那个文件夹的空白处，`Shift + 右键` → 「在此处打开 PowerShell 窗口」，敲：
-
-```powershell
-npm install
-```
-
-看到几行 `added ... packages` 就成。提示 `npm 不是内部或外部命令` 说明机器没装 Node —— 见下面常见问题第 3 条。
-
-### 第 4 步：重启 DSH
-
-**不是重启电脑。** 把 DSH 完全退出：右下角托盘找到它的图标，右键 → 退出；然后再打开。
-
-### 第 5 步：验收
-
-鼠标移到左边任意一条会话上，行尾 `···` 后面出现一个**垃圾桶图标** —— 成了。
-
-没出现？打开浏览器访问下面这个地址，把返回的内容发给我：
+验证：
 
 ```text
 http://127.0.0.1:19387/session-delete/ping
+{"ok":true,"home":"…","version":"0.3.4"}
 ```
+
+懒得自己动，在 DSH 里发这一句：
+
+> 把 GitHub 上的 xffwlkjgzs88/dsh-session-delete 装到 DSH：profile 的 package.json 加依赖、bundles 加一行，跑 npm install，重启后打开 /session-delete/ping 确认。
 
 ## 用起来
 
@@ -245,7 +140,7 @@ localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')
 四条路由挂在 `/session-delete` 下，同源、无鉴权。
 
 ```http
-GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.3"}
+GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.4"}
 GET  /session-delete/state             → 宿主认为有什么 vs 磁盘上实际有什么
 GET  /session-delete/size?sessionId=…  → 这条会话占多少字节
 POST /session-delete/delete            → {"sessionId":"…"} 或 {"sessionId":"…","force":true}
@@ -271,7 +166,7 @@ POST /session-delete/delete            → {"sessionId":"…"} 或 {"sessionId":
 |---|---|---|
 | DSH | 0.2.0-rc.2 桌面版（EXE FileVersion 0.2.0-rc.2） | **实际运行验证** |
 | 插件 | 0.2.0 | 在本机 DSH 里跑着，`/session-delete/ping` 返回 `"version":"0.2.0"` |
-| 插件 | 0.3.3（本仓库当前版本） | **只做了静态验证**：`node --check` + 4 条单测通过；界面与删除流程没有在本机重跑（升级需重启 DSH，会打断当前会话） |
+| 插件 | 0.3.4（本仓库当前版本） | **只做了静态验证**：`node --check` + 4 条单测通过；界面与删除流程没有在本机重跑（升级需重启 DSH，会打断当前会话） |
 | 系统 | Windows 11 | 实机 |
 | Node | 24.x | 只影响 `npm install`，运行用 DSH 自带运行时 |
 
@@ -302,79 +197,52 @@ POST /session-delete/delete            → {"sessionId":"…"} 或 {"sessionId":
 /session-delete/state   → registry 是 service 走主路；file-only 在降级；absent 服务没拿到
 ```
 
-## 名词解释（看不懂就查这）
+## 名词解释
 
 | 词 | 什么意思 |
 |---|---|
-| 宿主 / DSH | 你正在用的这个程序本身，DeepSeek Harness |
-| profile | DSH 的"配置档"，一个配置档就是一个文件夹：桌面版是 `desktop`，网页版是 `web` |
-| bundle | 插件的登记项，写进 `dsh.profile.bundles` 数组，DSH 启动时按这个列表加载 |
-| slot / 座位 | 宿主在界面上预留的位置。删除按钮就是"塞进"会话行的操作位 |
+| bundle | 插件的登记项，写进 `dsh.profile.bundles`，DSH 启动时按这个列表加载 |
+| slot / 座位 | 宿主在界面上预留的位置，删除按钮就是塞进会话行的操作位 |
 | registry | 宿主的会话登记表：哪条会话属于哪个工作区、哪些归档了、哪些置顶了 |
-| `~/.dsh` | DSH 的数据目录，会话、缓存、配置全在这。Windows 是 `C:\Users\你的用户名\.dsh` |
-| npm / Node | 装插件用的工具；没有也能装，见下面第 3 条 |
+| `~/.dsh` | DSH 的数据目录，会话、缓存、配置都在这 |
 
 ## 常见问题
 
-### 安装相关
+**装了没反应，看不到垃圾桶？**
+`/session-delete/ping` 打不开 = 插件没加载（查 `bundles`、确认真的重启过）；打得开但没按钮 = 座位名对不上，把 `/session-delete/state` 的返回发出来。
 
-**1. 我到底是 web 版还是桌面版？**
-双击图标启动的是桌面版，配置目录 `profiles\desktop`；命令行敲 `dsh web` 开浏览器的是 web 版，目录 `profiles\web`。分不清就两个都改，不影响。
+**提示「npm 不是内部或外部命令」？**
+没装 Node。下仓库 ZIP，解压后改名 `dsh-session-delete`，整个丢进 `node_modules\`，`bundles` 加一行，重启。
 
-**2. `~/.dsh` 在哪？**
-Windows：地址栏粘 `%USERPROFILE%\.dsh` 回车就到。macOS：`/Users/你的用户名/.dsh`。
+**改坏了 `package.json`，DSH 打不开？**
+同目录找 `package.json.bak-*`，改名回 `package.json` 覆盖。
 
-**3. 提示「npm 不是内部或外部命令」怎么办？**
-说明机器没装 Node。这个插件**零依赖**，不用 npm 也能装：
+**删错了能恢复吗？**
+不能，没有回收站也没有撤销。删前先备份 `~/.dsh/sessions` 和 `storages\workspace.json`。
 
-1. 打开仓库页面，点绿色 `Code` → `Download ZIP`；
-2. 解压，把解出来的文件夹改名成 `dsh-session-delete`；
-3. 整个文件夹丢进 `profiles\desktop\node_modules\`（没有 `node_modules` 就自己新建一个）；
-4. `bundles` 数组里加一行 `"dsh-session-delete"`，重启 DSH。
+**能只删会话里的一部分消息吗？**
+不能，只能整条删。
 
-**4. 改完 `package.json`，DSH 打不开或者报 JSON 错？**
-九成是漏了逗号或多了一个。改之前会留备份，同目录找 `package.json.bak-*`，改名回 `package.json` 覆盖就能还原。
+**会不会误删我正在用的这条？**
+会弹窗让你确认，删完页面重载、落到一条新会话。
 
-**5. 装了没反应，看不到垃圾桶？**
-按顺序查三步：
+**删完磁盘真的释放了吗？**
+是。正文目录和投影缓存都删了，弹窗里那个「占用 48.2 MB」就是实际删掉的量。
 
-1. 浏览器打开 `/session-delete/ping`，打不开 → 插件根本没加载，回去看 `bundles` 有没有漏、有没有真的重启；
-2. 打得开但没按钮 → 座位名对不上，把 `/session-delete/state` 的返回发出来；
-3. 两个都正常但还是没有 → 确认你看的是会话**列表**，不是已归档区。
+**会不会把我的内容传出去？**
+不会。代码里没有外发请求，只读写本机 `~/.dsh`，可以自己搜 `lib/index.js` 里的 `fetch`。
 
-### 使用相关
+**会不会影响 DSH 自己的更新？**
+不会。只是把更新入口从侧栏搬到设置里，走的还是官方更新桥。
 
-**6. 删错了能恢复吗？**
-不能。没有回收站、没有撤销，我也找不回来。用之前先备份 `~/.dsh/sessions` 和 `storages\workspace.json`。
+**「别把端口开到公网」是什么意思？**
+这四条路由没有密码。端口一旦映射到公网，任何人都能调删除接口。默认只听 `127.0.0.1` 就没事。
 
-**7. 能不能只删会话里的一部分消息？**
-不能，只能整条删。插件不做消息级裁剪。
+**升级 DSH 之后插件还在吗？**
+在，升级完重启一次即可。如果新版改了座位名，按钮会消失，那只能等适配。
 
-**8. 会不会误删我正在用的这条？**
-会先弹窗告诉你"这一轮会被打断"，你点确认才动手。删当前会话后页面会重载，落到一条新会话。
-
-**9. 删完磁盘真的释放了吗？**
-是。会话正文目录和投影缓存都删掉了。弹窗里显示的"占用 48.2 MB"就是实际删掉的量。
-
-**10. 插件本身占多少空间？**
-两个文件加文档，压缩包 65KB 左右，零依赖。它是来腾空间的，不是来占空间的。
-
-### 安全相关
-
-**11. 会不会把我的聊天内容传出去？**
-不会。代码里没有任何外发请求，只读写本机 `~/.dsh`。不信可以打开 `lib/index.js` 搜 `fetch`，一个都没有。
-
-**12. 会不会影响 DSH 自己更新？**
-不会。只是把更新入口从侧栏挪到设置里，走的还是官方更新桥。不想要这个改动，见文首提示里的关闭方法。
-
-**13. 「别把端口开到公网」是什么意思？**
-插件注册了 4 个 HTTP 路由，没有密码。如果 DSH 的网页端口被映射到公网，任何人都能调删除接口。默认只听 `127.0.0.1` 就是安全的。
-
-**14. 升级 DSH 之后插件还在吗？**
-`~/.dsh` 里的东西不会被升级清掉，但升级完要重启一次。如果新版改了座位名，按钮会消失，那只能等适配。
-
-**15. 支持 Mac / Linux 吗？**
-路径逻辑是跨平台的，但**只在 Windows 上跑过**，Mac 和 Linux 没实测，不能用别怪我。
+**Mac / Linux 支持吗？**
+路径逻辑跨平台，但只在 Windows 上跑过，没实测。
 
 ## 卸载
 
