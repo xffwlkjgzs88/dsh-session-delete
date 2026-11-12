@@ -1,0 +1,9 @@
+# dsh-session-delete bundle patch
+#
+# 只插一行 host：那条插件同时提供
+#   ① host 侧 POST /session-delete/delete   真删会话（正文 + 投影缓存 + registry）
+#   ② client 侧会话行 hover 按钮「删除」
+- insert:
+    - id: dsh-session-delete
+      name: 'dsh-session-delete'
+      # webServer 是硬依赖：没有 HTTP 服务时这行不会被加载（headless/TUI 场景）

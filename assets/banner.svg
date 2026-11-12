@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-label="dsh-session-delete">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#080b12"/>
+      <stop offset="52%" stop-color="#0e1626"/>
+      <stop offset="100%" stop-color="#0a1018"/>
+    </linearGradient>
+    <linearGradient id="stroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="rule" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0"/>
+      <stop offset="18%" stop-color="#3b82f6" stop-opacity=".95"/>
+      <stop offset="62%" stop-color="#a78bfa" stop-opacity=".95"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity=".30"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a78bfa" stop-opacity=".22"/>
+      <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity=".035" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="320" fill="url(#bg)"/>
+  <rect width="1200" height="320" fill="url(#grid)"/>
+  <ellipse cx="150" cy="60" rx="420" ry="260" fill="url(#glowA)"/>
+  <ellipse cx="1080" cy="280" rx="380" ry="230" fill="url(#glowB)"/>
+
+  <rect x="64" y="92" width="112" height="112" rx="26" fill="#0b1424" stroke="url(#stroke)" stroke-opacity=".55" stroke-width="1.5"/>
+  <g transform="translate(120 148)" fill="none" stroke="#ff7b72" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-7 -16v-4h14v4"/>
+    <path d="M-18 -16H18"/>
+    <path d="M-15 -11h30v30a4 4 0 0 1-4 4h-22a4 4 0 0 1-4-4z"/>
+    <path d="M-6 -4v18M6 -4v18"/>
+  </g>
+
+  <text x="212" y="150" font-family="'Segoe UI','Microsoft YaHei',system-ui,-apple-system,sans-serif" font-size="52" font-weight="700" fill="#f2f6fc" letter-spacing="-1.2">dsh-session-delete</text>
+  <text x="214" y="190" font-family="'Segoe UI','Microsoft YaHei',system-ui,-apple-system,sans-serif" font-size="20" fill="#94a3b8">真删除会话 · 让宿主的 registry 一起忘掉</text>
+
+  <g font-family="'Segoe UI','Microsoft YaHei',system-ui,-apple-system,sans-serif" font-size="13" fill="#b6c2d4">
+    <rect x="214" y="216" width="112" height="30" rx="15" fill="#ffffff" fill-opacity=".05" stroke="#ffffff" stroke-opacity=".10"/>
+    <text x="270" y="236" text-anchor="middle">DSH Plugin</text>
+
+    <rect x="336" y="216" width="108" height="30" rx="15" fill="#ffffff" fill-opacity=".05" stroke="#ffffff" stroke-opacity=".10"/>
+    <text x="390" y="236" text-anchor="middle">MIT License</text>
+
+    <rect x="454" y="216" width="176" height="30" rx="15" fill="#ffffff" fill-opacity=".05" stroke="#ffffff" stroke-opacity=".10"/>
+    <text x="542" y="236" text-anchor="middle">Host routes + Client slot</text>
+  </g>
+
+  <text x="1136" y="240" text-anchor="end" font-family="ui-monospace,SFMono-Regular,Consolas,monospace" font-size="14" fill="#46536b">github.com/YG/dsh-session-delete</text>
+  <rect x="0" y="314" width="1200" height="3" fill="url(#rule)"/>
+</svg>

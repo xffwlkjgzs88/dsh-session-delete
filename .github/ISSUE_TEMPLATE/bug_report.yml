@@ -1,0 +1,64 @@
+name: Bug report
+description: 删除不生效 / 按钮不出现 / 报错
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        先看一遍 README 的「排错」表格，还有 `GET /session-delete/state` 的输出 —— 九成问题在那里能直接看出来。
+
+  - type: input
+    id: dsh-version
+    attributes:
+      label: DSH 版本与配置档
+      description: 例如 `0.2.0-rc.2` + `desktop`
+      placeholder: 0.2.0 / desktop
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: 操作系统
+      placeholder: Windows 11 26100 / macOS 15.1 / Ubuntu 24.04
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: 你做了什么
+      description: 点了几次、删的是不是当前会话、会话当时在不在跑
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望 vs 实际
+    validations:
+      required: true
+
+  - type: textarea
+    id: state
+    attributes:
+      label: /session-delete/state 输出
+      description: 删掉 home 路径里的用户名再贴
+      render: json
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 删除响应的 steps
+      description: POST /session-delete/delete 的返回体，`fail:` 那几行最关键
+      render: json
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 自查
+      options:
+        - label: 已经从 `bundles` 里确认插件被加载，并重启过 DSH
+          required: true
+        - label: 我看过 docs/internals.md 里「为什么删文件删不掉」
+          required: false

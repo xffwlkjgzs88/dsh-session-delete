@@ -1,0 +1,26 @@
+name: Feature request
+description: 想要的能力
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你遇到的具体场景
+      description: 说场景，不要只说方案
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: 你想到的做法
+    validations:
+      required: false
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: 涉及哪一半
+      description: host（lib/index.js 的路由与状态清理）/ client（lib/client.js 的按钮与弹窗）/ 两者
+    validations:
+      required: false
