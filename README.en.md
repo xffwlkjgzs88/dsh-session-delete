@@ -62,6 +62,8 @@ Without the `workspaceRegistry` service it falls back to rewriting `workspace.js
 
 ## Install
 
+> Step-by-step beginner walkthrough (with copy-paste JSON) lives in the [Chinese README](README.md#三分钟上手不想动脑就照这个做).
+
 ### Let an AI do it
 
 Open a new session **inside DSH** and paste this to the built-in assistant — it can find the paths, edit the config and run the install itself:
@@ -91,7 +93,7 @@ Do not upgrade Node or DSH.
 }
 ```
 
-`npm install` in that profile directory, then restart DSH. Verify with `/session-delete/ping` → `{"ok":true,...,"version":"0.3.2"}`.
+`npm install` in that profile directory, then restart DSH. Verify with `/session-delete/ping` → `{"ok":true,...,"version":"0.3.3"}`.
 
 ## Two UI changes, both disclosed
 
@@ -108,7 +110,7 @@ localStorage.setItem('dsh.session-delete.hideUpdateBadge', '0')
 ## API
 
 ```http
-GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.2"}
+GET  /session-delete/ping              → {"ok":true,"home":"…","version":"0.3.3"}
 GET  /session-delete/state             → registry view vs. on-disk view
 GET  /session-delete/size?sessionId=…  → bytes this session occupies
 POST /session-delete/delete            → {"sessionId":"…"} or {"sessionId":"…","force":true}
@@ -131,7 +133,7 @@ What has actually been checked — not a support matrix:
 |---|---|---|
 | DSH | 0.2.0-rc.2 desktop | **ran for real** |
 | Plugin | 0.2.0 | running on this machine, `/ping` reports it |
-| Plugin | 0.3.2 (this repo) | **static only**: `node --check` + 4 unit tests; UI not re-run locally |
+| Plugin | 0.3.3 (this repo) | **static only**: `node --check` + 4 unit tests; UI not re-run locally |
 | OS | Windows 11 | real machine |
 
 Unverified: web build, DSH 0.1.x, macOS / Linux, future versions.

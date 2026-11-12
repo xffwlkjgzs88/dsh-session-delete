@@ -2,6 +2,19 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.3.3]
+
+### Docs
+
+- 新增「三分钟上手」：从判断 web/桌面版、`Win + R` 打开配置目录、逐字改 `package.json` 两处（含逗号提醒）、`npm install`、到重启验收，五步全写死。
+- 「常见问题」扩到 15 条，按安装 / 使用 / 安全分组，新增：没有 npm 怎么办、JSON 改坏了怎么还原、能不能只删部分消息、会不会误删当前会话、插件占多大、端口暴露是什么意思、Mac 支持情况。
+- 新增「名词解释」表：宿主、profile、bundle、slot / 座位、registry、`~/.dsh`、npm。
+- 新增「卸载」章节。
+
+### Meta
+
+- 重写历史，把前三个提交的作者从占位名 `YG` 改为账号本人（`xff <143243284+xffwlkjgzs88@users.noreply.github.com>`）。原先那个占位邮箱被 GitHub 匹配到了另一个同名账号，贡献者列表里会多出一个不相干的人。
+
 ## [0.3.2]
 
 ### Fixed
