@@ -2,6 +2,19 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.3.6]
+
+### Changed
+
+- 一句话安装里加了"版本对不上就让 AI 改代码适配"：模板里带版本占位，用户填自己的 DSH 版本，AI 负责对齐。
+- README 明确写出作者很懒、更新随缘，别等他追新版客户端；适配办法指向 `/session-delete/state` 的 `services`。
+- 明说完全开源免费：MIT、无付费版、无激活码、无广告。
+
+### Visual
+
+- 重画顶部横幅：渐变大标题、缓慢漂移的光晕、呼吸的图标环、右下角半透明的接口返回片段；动效跟随 `prefers-reduced-motion`。
+- 徽章精简为 Stars / License / 免责声明 / QQ，其余信息交给横幅里的三个标签（MIT 开源、完全免费、零依赖）。
+
 ## [0.3.5]
 
 ### Changed

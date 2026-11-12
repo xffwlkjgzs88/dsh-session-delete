@@ -20,7 +20,7 @@ curl http://127.0.0.1:19387/session-delete/ping
 ```
 
 ```json
-{ "ok": true, "home": "C:\\Users\\you\\.dsh", "version": "0.3.5" }
+{ "ok": true, "home": "C:\\Users\\you\\.dsh", "version": "0.3.6" }
 ```
 
 `home` 优先取环境变量 `DSH_HOME`，否则 `~/.dsh`。
