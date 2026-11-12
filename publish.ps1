@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     一键把 dsh-session-delete 发布到 GitHub（建仓 + 改写占位符 + 首次推送）。
 
@@ -102,7 +102,6 @@ if (-not $NoRewrite -and $Owner -ne 'YG') {
 # ---------------------------------------------------------------- 3. 提交
 Step 'git 初始化与提交'
 if (-not (Test-Path '.git')) { git init -q; Ok 'git init' }
-git branch -M main 2>$null
 
 if (-not (git config user.name)) { git config user.name $Owner }
 if (-not (git config user.email)) { git config user.email "$Owner@users.noreply.github.com" }
@@ -116,6 +115,8 @@ if ($pending) {
 } else {
     Ok '没有新改动'
 }
+git branch -M main 2>$null
+Ok ("分支：" + (git rev-parse --abbrev-ref HEAD))
 
 # ---------------------------------------------------------------- 4. 推送
 if ($SkipPush) { Step '按 -SkipPush 跳过推送'; return }
