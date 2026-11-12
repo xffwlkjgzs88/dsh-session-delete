@@ -39,15 +39,16 @@
 
 ## 装
 
-**方法一（推荐）**：在 DSH 里新开一个会话，把下面这句原样发给它。
+在 DSH 里新开一个会话，把下面这段发给它。**版本号换成你自己的**（设置或「关于」里能看到）：
 
 ```text
-把 GitHub 上的 xffwlkjgzs88/dsh-session-delete 装到 DSH：profile 的 package.json 加依赖、bundles 加一行，跑 npm install，重启后打开 /session-delete/ping 确认。
+把 GitHub 上的 xffwlkjgzs88/dsh-session-delete 装到 DSH。我这边是 0.2.0-rc.2 桌面版 Windows。
+如果插件跟我的版本对不上，你直接改它的代码适配，改完再装，最后打开 /session-delete/ping 确认。
 ```
 
-它自己会找目录、改文件、跑安装。装完重启 DSH 就行，不用更新客户端。
+最后一句是重点。作者很懒，不保证跟得上新版客户端；对不上就让 AI 现场改。改哪儿不用猜——打开 `/session-delete/state`，`services` 里哪个是 `false`，就是新版把那个名字改了。
 
-**方法二**：自己改两处。桌面版是 `~/.dsh/profiles/desktop/package.json`，web 版是 `~/.dsh/profiles/web/package.json`。
+不想麻烦 AI，自己改两处。桌面版是 `~/.dsh/profiles/desktop/package.json`，web 版是 `~/.dsh/profiles/web/package.json`：
 
 ```jsonc
 {
@@ -58,12 +59,14 @@
 
 同目录 `npm install`，重启。没装 Node 也行，零依赖：把仓库解压成 `node_modules/dsh-session-delete` 丢进去。
 
-**验证**：
+验证：
 
 ```text
 http://127.0.0.1:19387/session-delete/ping
-{"ok":true,"home":"…","version":"0.3.5"}
+{"ok":true,"home":"…","version":"0.3.6"}
 ```
+
+插件完全开源免费，MIT，没有付费版、没有激活码、没有广告，仓库里所有代码你都能看。
 
 ## 起因
 
@@ -211,7 +214,7 @@ POST /session-delete/delete            → {"sessionId":"…"} 或 {"sessionId":
 
 **小富富** · QQ **811588817**
 
-插件问题先看上面「常见问题」，再把 `/session-delete/state` 贴过来。
+很懒。这个插件纯粹因为自己看着归档列表烦才写的，更新随缘，不保证跟得上新客户端——对不上就让 AI 改，改法见上面「装」。
 
 接活：网站、小程序搭建部署，服务器、域名、支付接口对接，一条龙。加 QQ 直接说需求。
 
